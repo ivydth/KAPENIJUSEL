@@ -10,9 +10,8 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
-  Sparkles,
-  MapPin,
-  ArrowRight
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
 
@@ -26,7 +25,6 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [branchName, setBranchName] = useState('Kape Muna — Main Branch');
   const [showPassword, setShowPassword] = useState(false);
 
   // Status & validation
@@ -48,7 +46,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
     setLoading(true);
 
     try {
-      // 1. If Supabase is configured, authenticate through Supabase Auth
+      // 1. Supabase Auth if configured
       if (isSupabaseConfigured && supabase) {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -62,7 +60,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
           full_name: data.user.user_metadata?.full_name || email.split('@')[0],
           email: data.user.email,
           phone: data.user.user_metadata?.phone || '',
-          branch_name: branchName,
+          branch_name: 'Kape Muna — Main Branch',
         };
 
         localStorage.setItem('kape_muna_user', JSON.stringify(customer));
@@ -114,7 +112,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
     setLoading(true);
 
     try {
-      // 1. If Supabase is configured
+      // 1. Supabase Auth if configured
       if (isSupabaseConfigured && supabase) {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -123,7 +121,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
             data: {
               full_name: fullName.trim(),
               phone: phone.trim(),
-              branch_name: branchName,
+              branch_name: 'Kape Muna — Main Branch',
             },
           },
         });
@@ -135,7 +133,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
           full_name: fullName.trim(),
           email: email.trim(),
           phone: phone.trim(),
-          branch_name: branchName,
+          branch_name: 'Kape Muna — Main Branch',
         };
 
         localStorage.setItem('kape_muna_user', JSON.stringify(customer));
@@ -144,7 +142,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
         return;
       }
 
-      // 2. Local Backend Registration
+      // 2. Local Backend Registration Endpoint
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +151,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
           phone: phone.trim(),
           email: email.trim(),
           password,
-          branch_name: branchName,
+          branch_name: 'Kape Muna — Main Branch',
         }),
       });
 
@@ -173,55 +171,55 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
     }
   };
 
-  // 1-Tap Quick Demo Sign In
-  const handleQuickDemo = () => {
-    const demoUser = {
-      id: 'demo-jusselle-1',
-      full_name: 'Jusselle Surio',
-      email: 'jusselle@kapemuna.local',
-      phone: '0917-888-2468',
-      branch_name: 'Kape Muna — Main Branch',
-    };
-    localStorage.setItem('kape_muna_user', JSON.stringify(demoUser));
-    onAuthSuccess(demoUser);
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8F4EE] text-[#221610] flex flex-col justify-between p-4 sm:p-6 max-w-md mx-auto w-full transition-all">
-      {/* Top Bar with Back Button */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen relative flex flex-col justify-between p-4 sm:p-6 overflow-hidden select-none">
+      {/* 3rd Picture Background: Luscious Swirling Iced Coffee with Ice Cubes */}
+      <div
+        className="absolute inset-0 bg-cover bg-center z-0 scale-105 filter brightness-[0.88] contrast-[1.05]"
+        style={{ backgroundImage: `url('/images/auth_coffee_bg.jpg')` }}
+      />
+
+      {/* Warm Ambient Glassmorphism Vignette Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#180F0A]/60 via-[#20140D]/40 to-[#120B07]/75 backdrop-blur-[1px] z-0" />
+
+      {/* Top Bar with Frosted Glass Back Button & Brand Header */}
+      <div className="relative z-10 w-full max-w-md mx-auto flex items-center justify-between mb-2 pt-2">
         <button
           onClick={onBackToLanding}
-          className="w-10 h-10 rounded-full bg-cream-card border border-[#EAE1D3] flex items-center justify-center text-roast hover:bg-[#F3EDE2] transition-all shadow-cafe-sm"
-          aria-label="Back to welcome page"
+          className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur-md text-white border border-white/30 flex items-center justify-center transition-all shadow-lg active:scale-95"
+          aria-label="Back to landing page"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-1.5 text-caramel">
-          <Coffee className="w-4 h-4 fill-caramel/25" />
-          <span className="font-display font-bold text-base tracking-wide text-roast">Kape Muna</span>
+        {/* Elegant Top Brand Pill */}
+        <div className="flex items-center gap-2 bg-[#221610]/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-lg">
+          <Coffee className="w-4 h-4 text-caramel-gold fill-caramel-gold/30" />
+          <span className="font-display font-bold text-sm tracking-wide text-[#FAF6F0]">
+            Kape Muna
+          </span>
         </div>
 
-        <div className="w-10" /> {/* Spacer */}
+        <div className="w-10" /> {/* Balancer */}
       </div>
 
-      {/* Main Card */}
-      <div className="bg-[#FDFBF7] border border-[#ECE2D3] rounded-3xl p-5 sm:p-7 shadow-cafe-md my-auto">
-        {/* Header Titles */}
-        <div className="text-center mb-5">
-          <h2 className="text-2xl font-serif font-bold text-[#221610]">
+      {/* Main Glassmorphic Auth Card */}
+      <div className="relative z-10 w-full max-w-md mx-auto bg-[#FDFBF7]/95 sm:bg-[#FDFBF7]/95 backdrop-blur-2xl border border-white/60 rounded-3xl p-5 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)] my-auto transition-all animate-in fade-in zoom-in-95 duration-300">
+        
+        {/* Header Greeting */}
+        <div className="text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#221610] tracking-tight">
             {mode === 'signin' ? 'Welcome Back!' : 'Join Kape Muna'}
           </h2>
-          <p className="text-xs text-[#221610]/65 mt-1 font-medium">
+          <p className="text-xs text-[#221610]/70 mt-1 font-medium italic">
             {mode === 'signin'
-              ? 'Sign in to access your loyalty points & orders.'
-              : 'Create an account for quick pre-orders & perks.'}
+              ? 'Your freshly brewed pause is waiting for you.'
+              : 'Create your account and savor every sip.'}
           </p>
         </div>
 
-        {/* Mode Switcher Tabs */}
-        <div className="grid grid-cols-2 gap-1.5 bg-[#F2ECE1] p-1 rounded-2xl mb-5">
+        {/* Segmented Mode Switcher Tabs */}
+        <div className="grid grid-cols-2 gap-1.5 bg-[#EFE8DD] p-1 rounded-2xl mb-4 border border-[#E2D5C4]/80">
           <button
             type="button"
             onClick={() => {
@@ -231,7 +229,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
             }}
             className={`py-2 text-xs font-bold rounded-xl transition-all ${
               mode === 'signin'
-                ? 'bg-[#221610] text-[#FAF6F0] shadow-sm'
+                ? 'bg-[#221610] text-[#FAF6F0] shadow-md'
                 : 'text-[#221610]/70 hover:text-[#221610]'
             }`}
           >
@@ -246,7 +244,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
             }}
             className={`py-2 text-xs font-bold rounded-xl transition-all ${
               mode === 'signup'
-                ? 'bg-[#221610] text-[#FAF6F0] shadow-sm'
+                ? 'bg-[#221610] text-[#FAF6F0] shadow-md'
                 : 'text-[#221610]/70 hover:text-[#221610]'
             }`}
           >
@@ -254,22 +252,22 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
           </button>
         </div>
 
-        {/* Feedback Messages */}
+        {/* Feedback Alert Banners */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+          <div className="mb-3.5 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+          <div className="mb-3.5 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
             <span>{successMsg}</span>
           </div>
         )}
 
-        {/* 1. SIGN IN FORM */}
+        {/* 1. SIGN IN FORM (Clean, professional, without quick access button) */}
         {mode === 'signin' && (
           <form onSubmit={handleSignIn} className="space-y-3.5">
             <div>
@@ -283,7 +281,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. jusselle@kapemuna.local"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                   required
                 />
               </div>
@@ -309,7 +307,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-10 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-10 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                   required
                 />
                 <button
@@ -322,10 +320,11 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
               </div>
             </div>
 
+            {/* Primary Action Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#221610] to-caramel hover:from-[#160E0A] hover:to-caramel-hover text-white py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cafe-md active:scale-95 transition-all disabled:opacity-50 mt-2"
+              className="w-full bg-gradient-to-r from-[#221610] via-[#2A180F] to-caramel hover:from-[#160E0A] hover:to-caramel-hover text-white py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cafe-md active:scale-95 transition-all disabled:opacity-50 mt-4 group"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -335,14 +334,14 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
               ) : (
                 <>
                   <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
         )}
 
-        {/* 2. SIGN UP / CREATE ACCOUNT FORM */}
+        {/* 2. SIGN UP / CREATE ACCOUNT FORM (No primary branch, no quick demo button) */}
         {mode === 'signup' && (
           <form onSubmit={handleSignUp} className="space-y-3">
             <div>
@@ -356,7 +355,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Jusselle Surio"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                   required
                 />
               </div>
@@ -373,7 +372,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. 0917-888-2468"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                 />
               </div>
             </div>
@@ -389,7 +388,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. jusselle@kapemuna.local"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                   required
                 />
               </div>
@@ -406,7 +405,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-10 py-2.5 rounded-2xl text-xs text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
+                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-10 py-2.5 rounded-2xl text-xs sm:text-sm text-roast placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-caramel/40 focus:border-caramel shadow-xs"
                   required
                 />
                 <button
@@ -419,28 +418,11 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
               </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-roast mb-1">
-                Primary Store Branch
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-roast/40" />
-                <select
-                  value={branchName}
-                  onChange={(e) => setBranchName(e.target.value)}
-                  className="w-full bg-white border border-[#EDE3D5] pl-10 pr-3 py-2.5 rounded-2xl text-xs text-roast focus:outline-none focus:ring-2 focus:ring-caramel/30 focus:border-caramel"
-                >
-                  <option value="Kape Muna — Main Branch">Kape Muna — Main Branch</option>
-                  <option value="Kape Muna — Bonifacio High Street">Kape Muna — Bonifacio High Street</option>
-                  <option value="Kape Muna — Poblacion Roastery">Kape Muna — Poblacion Roastery</option>
-                </select>
-              </div>
-            </div>
-
+            {/* Primary Action Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-[#221610] to-caramel hover:from-[#160E0A] hover:to-caramel-hover text-white py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cafe-md active:scale-95 transition-all disabled:opacity-50 mt-3"
+              className="w-full bg-gradient-to-r from-[#221610] via-[#2A180F] to-caramel hover:from-[#160E0A] hover:to-caramel-hover text-white py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-cafe-md active:scale-95 transition-all disabled:opacity-50 mt-4 group"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -449,53 +431,49 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                 </div>
               ) : (
                 <>
-                  <span>Create Account & Start Ordering</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Create Account</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
         )}
 
-        {/* Divider */}
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#EDE3D5]" />
-          </div>
-          <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-            <span className="bg-[#FDFBF7] px-2 text-[#221610]/50 font-bold">Quick Access</span>
-          </div>
+        {/* Switch Mode Prompt Link */}
+        <div className="mt-4 pt-3 border-t border-[#EDE3D5] text-center">
+          <p className="text-xs text-[#221610]/70">
+            {mode === 'signin' ? (
+              <>
+                Don't have an account yet?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('signup')}
+                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-2 ml-0.5"
+                >
+                  Create one now
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('signin')}
+                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-2 ml-0.5"
+                >
+                  Sign In
+                </button>
+              </>
+            )}
+          </p>
         </div>
-
-        {/* 1-Tap Quick Demo Login (Extremely helpful for immediate pairing & grading) */}
-        <button
-          type="button"
-          onClick={handleQuickDemo}
-          className="w-full py-2.5 px-3 rounded-2xl border border-caramel/40 bg-caramel/10 hover:bg-caramel/15 text-caramel font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-caramel-gold" />
-          <span>Quick Demo Sign In as Jusselle</span>
-        </button>
       </div>
 
-      {/* Guest Checkout Alternative */}
-      <div className="text-center mt-3 mb-1">
-        <button
-          type="button"
-          onClick={() => {
-            const guestUser = {
-              id: 'guest',
-              full_name: 'Guest Customer',
-              email: 'guest@kapemuna.local',
-              phone: '0900-000-0000',
-              branch_name: 'Kape Muna — Main Branch',
-            };
-            onAuthSuccess(guestUser);
-          }}
-          className="text-xs font-semibold text-roast/60 hover:text-roast underline underline-offset-2"
-        >
-          Continue as Guest for now ➔
-        </button>
+      {/* Bottom Subtle Brand Footer */}
+      <div className="relative z-10 text-center py-2">
+        <p className="text-[11px] font-medium text-white/80 drop-shadow-md">
+          Kape Muna • Your daily pause in a cup
+        </p>
       </div>
     </div>
   );

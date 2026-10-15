@@ -66,17 +66,6 @@ export default function LandingPage({ onGetStarted, onSignInClick }) {
               className="w-full h-full object-cover rounded-full transform hover:scale-105 transition-transform duration-700"
             />
           </div>
-
-          {/* Floating Organic Botanical Leaf Accents */}
-          <div className="absolute -left-2 bottom-6 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-cafe-sm border border-[#EBE0D2] flex items-center gap-1.5 animate-bounce">
-            <span className="text-xs">🌿</span>
-            <span className="text-[10px] font-bold text-roast tracking-tight">100% Batangas Liberica</span>
-          </div>
-
-          <div className="absolute -right-2 top-8 z-20 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-cafe-sm border border-[#EBE0D2] flex items-center gap-1.5">
-            <span className="text-xs">⭐</span>
-            <span className="text-[10px] font-bold text-roast tracking-tight">4.9 • 2.1k Reviews</span>
-          </div>
         </div>
       </div>
 
