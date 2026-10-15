@@ -1,0 +1,30 @@
+{
+  "name": "kapenijusel",
+  "version": "1.0.0",
+  "description": "Kape Muna - Customer-Facing Coffee Shop Ordering System",
+  "main": "server/server.js",
+  "scripts": {
+    "dev": "concurrently -n \"server,client\" -c \"yellow,cyan\" \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "start": "npm start --prefix server",
+    "build": "npm run build --prefix client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivydth/KAPENIJUSEL.git"
+  },
+  "keywords": [
+    "coffee-shop",
+    "react",
+    "express",
+    "supabase",
+    "realtime",
+    "tailwind"
+  ],
+  "author": "Jusselle Surio",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

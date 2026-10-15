@@ -1,0 +1,818 @@
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { createClient } = require('@supabase/supabase-js');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(cors());
+app.use(express.json());
+
+// Initialize Supabase Client if credentials exist
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+let supabase = null;
+
+if (supabaseUrl && supabaseKey) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('[Supabase] Initialized client connected to:', supabaseUrl);
+  } catch (err) {
+    console.warn('[Supabase] Initialization error, falling back to local store:', err.message);
+  }
+} else {
+  console.log('[Info] Supabase credentials not found in env. Running with built-in high-fidelity local database.');
+}
+
+// ----------------------------------------------------------------------------
+// Local In-Memory Data Store (Used if Supabase is offline or not configured)
+// ----------------------------------------------------------------------------
+const categoriesData = [
+  { id: 'all', name: 'All', icon: 'Sparkles', display_order: 0 },
+  { id: 'espresso', name: 'Coffee', icon: 'Coffee', display_order: 1 },
+  { id: 'cold-brew', name: 'Cold Brew', icon: 'CupSoda', display_order: 2 },
+  { id: 'pastries', name: 'Pastries', icon: 'Croissant', display_order: 3 },
+  { id: 'non-coffee', name: 'Non-Coffee', icon: 'Milk', display_order: 4 },
+  { id: 'sandwiches', name: 'Sandwiches', icon: 'Layers', display_order: 5 },
+  { id: 'desserts', name: 'Desserts', icon: 'Cake', display_order: 6 }
+];
+
+const customizationOptionsData = [
+  // Sizes
+  { id: 'size-12oz', group_type: 'size', name: '12oz (Regular)', price_modifier: 0.00, is_default: true },
+  { id: 'size-16oz', group_type: 'size', name: '16oz (Large)', price_modifier: 20.00, is_default: false },
+  // Sweetness
+  { id: 'sweet-0', group_type: 'sweetness', name: '0% (Unsweetened)', price_modifier: 0.00, is_default: false },
+  { id: 'sweet-50', group_type: 'sweetness', name: '50% (Less Sweet)', price_modifier: 0.00, is_default: false },
+  { id: 'sweet-100', group_type: 'sweetness', name: '100% (Standard Sweet)', price_modifier: 0.00, is_default: true },
+  // Milk Choices
+  { id: 'milk-whole', group_type: 'milk', name: 'Whole Milk', price_modifier: 0.00, is_default: true },
+  { id: 'milk-oat', group_type: 'milk', name: 'Oat Milk (+₱30)', price_modifier: 30.00, is_default: false },
+  { id: 'milk-almond', group_type: 'milk', name: 'Almond Milk (+₱30)', price_modifier: 30.00, is_default: false },
+  // Espresso Shots
+  { id: 'shot-single', group_type: 'shots', name: 'Single Shot', price_modifier: 0.00, is_default: true },
+  { id: 'shot-double', group_type: 'shots', name: 'Double Shot (+₱25)', price_modifier: 25.00, is_default: false },
+  { id: 'shot-decaf', group_type: 'shots', name: 'Decaf', price_modifier: 0.00, is_default: false }
+];
+
+const menuItemsData = [
+  {
+    id: 'cappuccino',
+    name: 'Cappuccino',
+    category_id: 'espresso',
+    description: 'Smooth espresso with perfectly balanced steamed milk & velvety foam dusted with cocoa.',
+    base_price: 145.00,
+    image_url: '/images/cappuccino.png',
+    badge: 'BESTSELLER',
+    rating: 4.8,
+    review_count: '1.2k+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'spanish-latte',
+    name: 'Spanish Latte',
+    category_id: 'espresso',
+    description: 'Kape Muna signature rich espresso with silky condensed milk & creamy microfoam.',
+    base_price: 165.00,
+    image_url: '/images/spanish_latte.png',
+    badge: 'BESTSELLER',
+    rating: 4.9,
+    review_count: '2.1k+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'barako-cold-brew',
+    name: 'Barako Cold Brew',
+    category_id: 'cold-brew',
+    description: 'Slow-steeped 16-hour Batangas Liberica roast with aromatic dark chocolate undertones.',
+    base_price: 150.00,
+    image_url: '/images/cold_brew.png',
+    badge: 'POPULAR',
+    rating: 4.8,
+    review_count: '850+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'caramel-macchiato',
+    name: 'Caramel Macchiato',
+    category_id: 'espresso',
+    description: 'Vanilla-infused steamed milk marked with double espresso and rich buttery caramel drizzle.',
+    base_price: 175.00,
+    image_url: '/images/caramel_macchiato.png',
+    badge: 'BESTSELLER',
+    rating: 4.9,
+    review_count: '1.5k+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'chocolate-muffin',
+    name: 'Chocolate Muffin',
+    category_id: 'pastries',
+    description: 'Rich, moist and perfectly baked artisanal dark chocolate muffin with molten ganache center.',
+    base_price: 110.00,
+    image_url: '/images/chocolate_muffin.png',
+    badge: "CHEF'S PICK",
+    rating: 4.7,
+    review_count: '968+',
+    is_available: true,
+    has_customization: false
+  },
+  {
+    id: 'chicken-club-sandwich',
+    name: 'Chicken Club Sandwich',
+    category_id: 'sandwiches',
+    description: 'Triple-decker toasted brioche with grilled chicken breast, fresh veggies, bacon & garlic aioli.',
+    base_price: 195.00,
+    image_url: '/images/club_sandwich.png',
+    badge: 'POPULAR',
+    rating: 4.6,
+    review_count: '743+',
+    is_available: true,
+    has_customization: false
+  },
+  {
+    id: 'butter-croissant',
+    name: 'Artisan Butter Croissant',
+    category_id: 'pastries',
+    description: 'Flaky golden French pastry with honeycomb interior, baked fresh every morning.',
+    base_price: 120.00,
+    image_url: '/images/croissant.png',
+    badge: 'BESTSELLER',
+    rating: 4.8,
+    review_count: '1.4k+',
+    is_available: true,
+    has_customization: false
+  },
+  {
+    id: 'matcha-cloud-latte',
+    name: 'Matcha Cloud Latte',
+    category_id: 'non-coffee',
+    description: 'Ceremonial grade Kyoto matcha topped with a velvet sweet vanilla cold foam.',
+    base_price: 170.00,
+    image_url: '/images/matcha_latte.png',
+    badge: 'POPULAR',
+    rating: 4.7,
+    review_count: '890+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'ube-halaya-latte',
+    name: 'Ube Halaya Latte',
+    category_id: 'non-coffee',
+    description: 'Authentic creamy Tagaytay ube blended with coconut cream and fresh whole milk.',
+    base_price: 180.00,
+    image_url: '/images/ube_latte.png',
+    badge: "CHEF'S PICK",
+    rating: 4.9,
+    review_count: '1.1k+',
+    is_available: true,
+    has_customization: true
+  },
+  {
+    id: 'pandesal-sliders',
+    name: 'Pandesal Trio Sliders',
+    category_id: 'sandwiches',
+    description: 'Warm traditional pandesal stuffed with artisanal corned beef, kesong puti and fluffy eggs.',
+    base_price: 165.00,
+    image_url: '/images/pandesal_sliders.png',
+    badge: "CHEF'S PICK",
+    rating: 4.7,
+    review_count: '620+',
+    is_available: true,
+    has_customization: false
+  },
+  {
+    id: 'basque-cheesecake',
+    name: 'Mini Basque Burnt Cheesecake',
+    category_id: 'desserts',
+    description: 'Caramelized burnt crust with an oozing, silky smooth cream cheese center.',
+    base_price: 185.00,
+    image_url: '/images/cheesecake.png',
+    badge: 'BESTSELLER',
+    rating: 4.9,
+    review_count: '1.3k+',
+    is_available: true,
+    has_customization: false
+  }
+];
+
+const fs = require('fs');
+const path = require('path');
+const ORDERS_FILE = path.join(__dirname, 'orders_store.json');
+
+// Active Orders in-memory cache with disk persistence
+const ordersMap = new Map();
+
+function saveOrdersToDisk() {
+  try {
+    const list = Array.from(ordersMap.entries());
+    fs.writeFileSync(ORDERS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {}
+}
+
+function loadOrdersFromDisk() {
+  try {
+    if (fs.existsSync(ORDERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf-8'));
+      data.forEach(([k, v]) => ordersMap.set(k, v));
+    }
+  } catch (e) {}
+}
+
+loadOrdersFromDisk();
+
+// Ensure initial sample order KM-108 exists if not loaded
+if (!ordersMap.has('KM-108')) {
+ordersMap.set('KM-108', {
+  id: 'km-uuid-108',
+  order_code: 'KM-108',
+  customer_name: 'Jusselle Surio',
+  customer_phone: '0917-888-2468',
+  branch_name: 'Kape Muna — Main Branch',
+  order_type: 'In-Store Walk-in',
+  payment_method: 'Pay at Counter',
+  payment_status: 'pending',
+  payment_reference: null,
+  pickup_time: 'ASAP (10-15 mins)',
+  status: 'Pending Payment',
+  subtotal: 310.00,
+  service_fee: 0.00,
+  discount: 0.00,
+  total_price: 310.00,
+  notes: 'Extra hot please, ready for counter pickup',
+  created_at: new Date(Date.now() - 5 * 60000).toISOString(),
+  updated_at: new Date(Date.now() - 5 * 60000).toISOString(),
+  items: [
+    {
+      id: 'item-108-1',
+      menu_item_id: 'cappuccino',
+      item_name: 'Cappuccino',
+      item_price: 145.00,
+      quantity: 1,
+      selected_size: '16oz (Large)',
+      selected_sweetness: '100% (Standard Sweet)',
+      selected_milk: 'Whole Milk',
+      selected_shots: 'Single Shot',
+      customization_total: 20.00,
+      line_total: 165.00,
+      special_notes: ''
+    },
+    {
+      id: 'item-108-2',
+      menu_item_id: 'cappuccino',
+      item_name: 'Cappuccino',
+      item_price: 145.00,
+      quantity: 1,
+      selected_size: '12oz (Regular)',
+      selected_sweetness: '50% (Less Sweet)',
+      selected_milk: 'Whole Milk',
+      selected_shots: 'Single Shot',
+      customization_total: 0.00,
+      line_total: 145.00,
+      special_notes: 'Less sugar'
+    }
+  ]
+});
+  saveOrdersToDisk();
+}
+
+// Realtime SSE Clients listening to order changes
+const sseClients = new Map(); // order_code -> Set of response objects
+
+function broadcastOrderUpdate(orderCode, order) {
+  const clients = sseClients.get(orderCode);
+  if (clients && clients.size > 0) {
+    const payload = JSON.stringify({ type: 'UPDATE', data: order });
+    clients.forEach(res => {
+      res.write(`data: ${payload}\n\n`);
+    });
+  }
+}
+
+// ----------------------------------------------------------------------------
+// API Endpoints
+// ----------------------------------------------------------------------------
+
+/**
+ * 1. GET /api/menu
+ * Fetch active categories, products, and available customizations.
+ */
+app.get('/api/menu', async (req, res) => {
+  try {
+    if (supabase) {
+      const [{ data: categories }, { data: menu_items }, { data: customizations }] = await Promise.all([
+        supabase.from('categories').select('*').order('display_order', { ascending: true }),
+        supabase.from('menu_items').select('*').eq('is_available', true).order('name', { ascending: true }),
+        supabase.from('customization_options').select('*').order('display_order', { ascending: true })
+      ]);
+
+      if (categories && menu_items && customizations) {
+        return res.json({
+          success: true,
+          categories,
+          menu_items,
+          customization_options: customizations
+        });
+      }
+    }
+
+    // Fallback to local high-fidelity dataset
+    return res.json({
+      success: true,
+      categories: categoriesData,
+      menu_items: menuItemsData,
+      customization_options: customizationOptionsData
+    });
+  } catch (error) {
+    console.error('Error fetching menu:', error);
+    return res.status(500).json({ success: false, error: 'Failed to fetch menu' });
+  }
+});
+
+// ----------------------------------------------------------------------------
+// Customer Authentication Endpoints
+// ----------------------------------------------------------------------------
+const usersMap = new Map();
+
+// Default demo customer
+usersMap.set('jusselle@kapemuna.local', {
+  id: 'usr-jusselle-1',
+  full_name: 'Jusselle Surio',
+  email: 'jusselle@kapemuna.local',
+  phone: '0917-888-2468',
+  password: 'password123',
+  branch_name: 'Kape Muna — Main Branch'
+});
+
+/**
+ * Auth: POST /api/auth/register
+ */
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { full_name, email, phone, password, branch_name } = req.body;
+    if (!full_name || !email || !password) {
+      return res.status(400).json({ success: false, error: 'Full name, email, and password are required' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    if (usersMap.has(normalizedEmail)) {
+      return res.status(400).json({ success: false, error: 'An account with this email already exists' });
+    }
+
+    const newUser = {
+      id: `usr-${Date.now()}`,
+      full_name: full_name.trim(),
+      email: normalizedEmail,
+      phone: phone ? phone.trim() : '',
+      password,
+      branch_name: branch_name || 'Kape Muna — Main Branch'
+    };
+
+    usersMap.set(normalizedEmail, newUser);
+
+    const { password: _, ...userProfile } = newUser;
+    return res.status(201).json({ success: true, user: userProfile });
+  } catch (err) {
+    console.error('Error registering user:', err);
+    return res.status(500).json({ success: false, error: 'Server registration error' });
+  }
+});
+
+/**
+ * Auth: POST /api/auth/login
+ */
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required' });
+    }
+
+    const normalized = email.toLowerCase().trim();
+    let user = usersMap.get(normalized);
+
+    // Also allow login with phone number
+    if (!user) {
+      for (const u of usersMap.values()) {
+        if (u.phone && u.phone === email.trim()) {
+          user = u;
+          break;
+        }
+      }
+    }
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({ success: false, error: 'Invalid email/phone or password' });
+    }
+
+    const { password: _, ...userProfile } = user;
+    return res.json({ success: true, user: userProfile });
+  } catch (err) {
+    console.error('Error logging in user:', err);
+    return res.status(500).json({ success: false, error: 'Server login error' });
+  }
+});
+
+/**
+ * Server-side Price Validator
+ */
+function calculateItemPricing(item) {
+  const menuItem = menuItemsData.find(m => m.id === item.menu_item_id);
+  const basePrice = menuItem ? Number(menuItem.base_price) : Number(item.item_price || 0);
+
+  let addonPrice = 0;
+  // Size add-on
+  if (item.selected_size && item.selected_size.includes('16oz')) {
+    addonPrice += 20.00;
+  }
+  // Milk add-on
+  if (item.selected_milk && (item.selected_milk.includes('Oat') || item.selected_milk.includes('Almond'))) {
+    addonPrice += 30.00;
+  }
+  // Espresso Shots
+  if (item.selected_shots && item.selected_shots.includes('Double')) {
+    addonPrice += 25.00;
+  }
+  // Food & Pastry Add-ons (e.g. Butter +₱15, Ganache +₱15, Whipped Cream +₱20, Cheese +₱25)
+  if (Array.isArray(item.selected_addons)) {
+    item.selected_addons.forEach(add => {
+      if (typeof add === 'string') {
+        if (add.includes('25')) addonPrice += 25.00;
+        else if (add.includes('20')) addonPrice += 20.00;
+        else if (add.includes('15')) addonPrice += 15.00;
+      }
+    });
+  } else if (item.customization_total && Number(item.customization_total) > 0 && !item.selected_size?.includes('16oz') && !item.selected_milk?.includes('Oat') && !item.selected_milk?.includes('Almond') && !item.selected_shots?.includes('Double')) {
+    addonPrice += Number(item.customization_total);
+  }
+
+  const unitPrice = basePrice + addonPrice;
+  const quantity = Math.max(1, parseInt(item.quantity || 1, 10));
+  const lineTotal = unitPrice * quantity;
+
+  return {
+    basePrice,
+    addonPrice,
+    unitPrice,
+    quantity,
+    lineTotal
+  };
+}
+
+/**
+ * 2. POST /api/orders
+ * Validate price calculation on the server and insert new order.
+ */
+app.post('/api/orders', async (req, res) => {
+  try {
+    const {
+      customer_name,
+      customer_phone,
+      branch_name = 'Kape Muna — Main Branch',
+      order_type,
+      payment_method,
+      payment_reference,
+      pickup_time = 'ASAP (10-15 mins)',
+      items = [],
+      notes = '',
+      applied_discount = 0
+    } = req.body;
+
+    if (!customer_name || !order_type || !payment_method || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required order fields (customer_name, order_type, payment_method, items)'
+      });
+    }
+
+    // Server-side Price Verification
+    let calculatedSubtotal = 0;
+    const verifiedItems = items.map((item, index) => {
+      const pricing = calculateItemPricing(item);
+      calculatedSubtotal += pricing.lineTotal;
+
+      return {
+        id: `item-${Date.now()}-${index}`,
+        menu_item_id: item.menu_item_id,
+        item_name: item.item_name,
+        item_price: pricing.basePrice,
+        quantity: pricing.quantity,
+        selected_size: item.selected_size || '12oz (Regular)',
+        selected_sweetness: item.selected_sweetness || '100% (Standard Sweet)',
+        selected_milk: item.selected_milk || 'Whole Milk',
+        selected_shots: item.selected_shots || 'Single Shot',
+        customization_total: pricing.addonPrice,
+        line_total: pricing.lineTotal,
+        special_notes: item.special_notes || ''
+      };
+    });
+
+    const discount = Number(applied_discount) || 0;
+    const serviceFee = 0; // standard counter pick-up
+    const totalPrice = Math.max(0, calculatedSubtotal - discount + serviceFee);
+
+    // Initial status determined by payment
+    let initialStatus = 'Pending Payment';
+    let paymentStatus = 'pending';
+
+    if (order_type === 'Remote Pre-Order' && payment_reference) {
+      paymentStatus = 'paid';
+      initialStatus = 'Queued';
+    } else if (order_type === 'In-Store Walk-in' && payment_method === 'Online Payment' && payment_reference) {
+      paymentStatus = 'paid';
+      initialStatus = 'Queued';
+    } else {
+      // In-Store Pay at counter or awaiting reference
+      paymentStatus = 'pending';
+      initialStatus = 'Pending Payment';
+    }
+
+    // Generate unique order code (e.g., KM-109, KM-234)
+    const randomDigits = Math.floor(100 + Math.random() * 900);
+    const orderCode = `KM-${randomDigits}`;
+
+    const newOrder = {
+      id: `km-${Date.now()}`,
+      order_code: orderCode,
+      customer_name,
+      customer_phone: customer_phone || 'N/A',
+      branch_name,
+      order_type,
+      payment_method,
+      payment_status: paymentStatus,
+      payment_reference: payment_reference || null,
+      pickup_time,
+      status: initialStatus,
+      subtotal: calculatedSubtotal,
+      service_fee: serviceFee,
+      discount,
+      total_price: totalPrice,
+      notes,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      items: verifiedItems
+    };
+
+    // Store in local map
+    ordersMap.set(orderCode, newOrder);
+    saveOrdersToDisk();
+
+    // If Supabase is active, persist to PostgreSQL
+    if (supabase) {
+      try {
+        const { data: insertedOrder, error: orderErr } = await supabase
+          .from('orders')
+          .insert({
+            order_code: newOrder.order_code,
+            customer_name: newOrder.customer_name,
+            customer_phone: newOrder.customer_phone,
+            branch_name: newOrder.branch_name,
+            order_type: newOrder.order_type,
+            payment_method: newOrder.payment_method,
+            payment_status: newOrder.payment_status,
+            payment_reference: newOrder.payment_reference,
+            pickup_time: newOrder.pickup_time,
+            status: newOrder.status,
+            subtotal: newOrder.subtotal,
+            service_fee: newOrder.service_fee,
+            discount: newOrder.discount,
+            total_price: newOrder.total_price,
+            notes: newOrder.notes
+          })
+          .select()
+          .single();
+
+        if (orderErr) {
+          console.warn('[Supabase] Warning inserting order:', orderErr.message);
+        } else if (insertedOrder) {
+          newOrder.id = insertedOrder.id;
+          const orderItemsPayload = verifiedItems.map(it => ({
+            order_id: insertedOrder.id,
+            menu_item_id: it.menu_item_id,
+            item_name: it.item_name,
+            item_price: it.item_price,
+            quantity: it.quantity,
+            selected_size: it.selected_size,
+            selected_sweetness: it.selected_sweetness,
+            selected_milk: it.selected_milk,
+            selected_shots: it.selected_shots,
+            customization_total: it.customization_total,
+            line_total: it.line_total,
+            special_notes: it.special_notes
+          }));
+          await supabase.from('order_items').insert(orderItemsPayload);
+        }
+      } catch (err) {
+        console.warn('[Supabase] Error saving order to database:', err.message);
+      }
+    }
+
+    broadcastOrderUpdate(orderCode, newOrder);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Order created successfully',
+      order: newOrder
+    });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    return res.status(500).json({ success: false, error: 'Server error processing order' });
+  }
+});
+
+/**
+ * 3. GET /api/orders/:code
+ * Retrieve live order status and itemized summary.
+ */
+app.get('/api/orders/:code', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+
+    // Check Supabase first if connected
+    if (supabase) {
+      try {
+        const { data: orderData, error } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('order_code', code)
+          .single();
+
+        if (orderData && !error) {
+          const formatted = {
+            ...orderData,
+            items: orderData.order_items || []
+          };
+          ordersMap.set(code, formatted);
+          return res.json({ success: true, order: formatted });
+        }
+      } catch (e) {
+        console.warn('[Supabase] Read failed, checking local store:', e.message);
+      }
+    }
+
+    // Check local store
+    const localOrder = ordersMap.get(code);
+    if (!localOrder) {
+      return res.status(404).json({ success: false, error: `Order ${code} not found` });
+    }
+
+    return res.json({ success: true, order: localOrder });
+  } catch (error) {
+    console.error('Error retrieving order:', error);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve order' });
+  }
+});
+
+/**
+ * 4. PATCH /api/orders/:code/cancel
+ * Verify current status; allow cancellation if 'Pending Payment' or 'Queued',
+ * reject with HTTP 400 if already 'Preparing' or later.
+ */
+app.patch('/api/orders/:code/cancel', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    let order = ordersMap.get(code);
+
+    if (supabase) {
+      try {
+        const { data: dbOrder } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('order_code', code)
+          .single();
+        if (dbOrder) {
+          order = { ...dbOrder, items: dbOrder.order_items || [] };
+          ordersMap.set(code, order);
+        }
+      } catch (e) {}
+    }
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: `Order ${code} not found` });
+    }
+
+    const currentStatus = order.status;
+
+    // Strict cancellation rule:
+    // ONLY allowed when status is 'Pending Payment' or 'Queued'
+    if (currentStatus !== 'Pending Payment' && currentStatus !== 'Queued') {
+      return res.status(400).json({
+        success: false,
+        error: `Cancellation rejected: Order is already '${currentStatus}'. Orders currently preparing or completed cannot be cancelled.`
+      });
+    }
+
+    order.status = 'Cancelled';
+    order.updated_at = new Date().toISOString();
+    ordersMap.set(code, order);
+    saveOrdersToDisk();
+
+    if (supabase) {
+      await supabase
+        .from('orders')
+        .update({ status: 'Cancelled', updated_at: order.updated_at })
+        .eq('order_code', code);
+    }
+
+    broadcastOrderUpdate(code, order);
+
+    return res.json({
+      success: true,
+      message: `Order ${code} was successfully cancelled.`,
+      order
+    });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    return res.status(500).json({ success: false, error: 'Failed to cancel order' });
+  }
+});
+
+/**
+ * 5. PATCH /api/orders/:code/status
+ * Barista / Admin helper to transition status and trigger live Realtime updates.
+ */
+app.patch('/api/orders/:code/status', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const { status, payment_status } = req.body;
+
+    const validStatuses = ['Pending Payment', 'Queued', 'Preparing', 'Ready for Pickup', 'Completed', 'Cancelled'];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, error: `Invalid status '${status}'` });
+    }
+
+    let order = ordersMap.get(code);
+    if (!order) {
+      return res.status(404).json({ success: false, error: `Order ${code} not found` });
+    }
+
+    if (status) order.status = status;
+    if (payment_status) order.payment_status = payment_status;
+    order.updated_at = new Date().toISOString();
+
+    ordersMap.set(code, order);
+    saveOrdersToDisk();
+
+    if (supabase) {
+      const updates = { updated_at: order.updated_at };
+      if (status) updates.status = status;
+      if (payment_status) updates.payment_status = payment_status;
+      await supabase.from('orders').update(updates).eq('order_code', code);
+    }
+
+    broadcastOrderUpdate(code, order);
+
+    return res.json({
+      success: true,
+      message: `Order ${code} status updated to ${order.status}`,
+      order
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    return res.status(500).json({ success: false, error: 'Failed to update order status' });
+  }
+});
+
+/**
+ * 6. GET /api/orders/:code/stream
+ * Server-Sent Events (SSE) Realtime Stream for Instant Local Updates
+ */
+app.get('/api/orders/:code/stream', (req, res) => {
+  const code = req.params.code.toUpperCase();
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  if (!sseClients.has(code)) {
+    sseClients.set(code, new Set());
+  }
+  const clientSet = sseClients.get(code);
+  clientSet.add(res);
+
+  // Send initial state immediately
+  const existingOrder = ordersMap.get(code);
+  if (existingOrder) {
+    res.write(`data: ${JSON.stringify({ type: 'INITIAL', data: existingOrder })}\n\n`);
+  }
+
+  req.on('close', () => {
+    clientSet.delete(res);
+    if (clientSet.size === 0) {
+      sseClients.delete(code);
+    }
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`☕ Kape Muna Backend Server running on http://localhost:${PORT}`);
+});
