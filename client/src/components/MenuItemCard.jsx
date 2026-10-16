@@ -1,9 +1,15 @@
 import React from 'react';
-import { Plus, Star } from 'lucide-react';
+import { Plus, Star, Heart } from 'lucide-react';
 import { FALLBACK_IMAGE } from '../data/menuData';
 
-export default function MenuItemCard({ item, onSelect }) {
+export default function MenuItemCard({
+  item,
+  onSelect,
+  isFavorite = false,
+  onToggleFavorite,
+}) {
   const {
+    id,
     name,
     description,
     base_price,
@@ -39,6 +45,27 @@ export default function MenuItemCard({ item, onSelect }) {
                 {badge}
               </span>
             </div>
+          )}
+
+          {/* Heart Favorite Button */}
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(id);
+              }}
+              className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 shadow-sm ${
+                isFavorite
+                  ? 'bg-rose-500 text-white scale-105'
+                  : 'bg-white/85 text-[#221610]/70 hover:bg-white hover:text-rose-500'
+              }`}
+              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFavorite ? 'fill-white text-white' : ''}`}
+                strokeWidth={isFavorite ? 2.5 : 2}
+              />
+            </button>
           )}
         </div>
 

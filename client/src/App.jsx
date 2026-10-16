@@ -11,6 +11,7 @@ import LiveOrderTracker from './components/LiveOrderTracker';
 import BottomNav from './components/BottomNav';
 import NotificationsModal from './components/NotificationsModal';
 import MenuTab from './components/MenuTab';
+import FavoritesTab from './components/FavoritesTab';
 import ProfileTab from './components/ProfileTab';
 import { CATEGORIES, MENU_ITEMS } from './data/menuData';
 import { CartProvider, useCart } from './context/CartContext';
@@ -19,7 +20,8 @@ import {
   Sparkles,
   Tag,
   CheckCircle2,
-  Coffee
+  Coffee,
+  Heart
 } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -69,14 +71,38 @@ function MainApp() {
     } catch {}
   };
 
-  // Portal tab states: 'home' | 'menu' | 'tracking' | 'profile'
+  // Portal tab states: 'home' | 'favorites' | 'tracking' | 'profile'
   const [activeTab, setActiveTab] = useState('home');
   const [categories, setCategories] = useState(CATEGORIES);
   const [menuItems, setMenuItems] = useState(MENU_ITEMS);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [filterTag, setFilterTag] = useState('all'); // 'all' | 'bestseller' | 'chef' | 'popular'
   const [searchQuery, setSearchQuery] = useState('');
   const [customizingItem, setCustomizingItem] = useState(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(3);
+
+  // Customer Favorites state with local persistence
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kape_muna_favorites');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleFavorite = (itemId) => {
+    setFavorites((prev) => {
+      const next = prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId];
+      try {
+        localStorage.setItem('kape_muna_favorites', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const {
     activeOrderCode,
@@ -146,20 +172,35 @@ function MainApp() {
 
   const handleQuickOrderNow = (targetCategory) => {
     if (targetCategory) setSelectedCategory(targetCategory);
-    setActiveTab('menu');
+    setActiveTab('home');
   };
 
-  // Popular picks for Home tab
-  const popularPicks = menuItems.filter((m) =>
-    [
-      'kapeng-barako-pour-over',
-      'kape-kastila-spanish-latte',
-      'classic-butter-ensaymada',
-      'corned-beef-cheese-pandesal',
-      'ube-halaya-latte',
-      'mango-graham-shaken-milk'
-    ].includes(m.id)
-  );
+  // Filtered menu items for Home tab
+  const filteredHomeItems = React.useMemo(() => {
+    return menuItems.filter((item) => {
+      // Category filter
+      if (selectedCategory && selectedCategory !== 'all') {
+        const normSelected = selectedCategory.replace(/-/g, '_');
+        const normItemCat = (item.category_id || '').replace(/-/g, '_');
+        if (normItemCat !== normSelected) return false;
+      }
+
+      // Tag filter
+      if (filterTag === 'bestseller' && item.badge !== 'BESTSELLER') return false;
+      if (filterTag === 'chef' && item.badge !== "CHEF'S PICK") return false;
+      if (filterTag === 'popular' && item.badge !== 'POPULAR') return false;
+
+      // Search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = item.name.toLowerCase().includes(query);
+        const matchesDesc = item.description?.toLowerCase().includes(query);
+        if (!matchesName && !matchesDesc) return false;
+      }
+
+      return true;
+    });
+  }, [menuItems, selectedCategory, filterTag, searchQuery]);
 
   // 1. RENDER LANDING PAGE
   if (viewState === 'landing') {
@@ -194,114 +235,110 @@ function MainApp() {
           searchQuery={searchQuery}
           setSearchQuery={(q) => {
             setSearchQuery(q);
-            if (q && activeTab === 'home') setActiveTab('menu');
+            if (q && activeTab !== 'home') setActiveTab('home');
           }}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
-          onOpenNotifications={() => setIsNotificationsOpen(true)}
-          onOpenFilter={() => setActiveTab('menu')}
+          unreadCount={unreadCount}
+          onOpenNotifications={() => {
+            setIsNotificationsOpen(true);
+            setUnreadCount(0);
+          }}
           onToggleSideMenu={() => setActiveTab('profile')}
         />
 
         {/* Main Tab Content */}
         <main className="relative z-10 flex-1">
-          {/* TAB 1: HOME */}
+          {/* TAB 1: HOME (Includes Promo Carousel + Category Chips + Full Scrollable Menu List) */}
           {activeTab === 'home' && (
             <div className="space-y-4 pb-28 pt-1">
               {/* Promo Banner Carousel */}
               <PromoCarousel onOrderNow={handleQuickOrderNow} />
 
-              {/* Category Chips */}
+              {/* Category Chips (Smooth non-clipping circular pills) */}
               <CategoryChips
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onSelectCategory={(catId) => {
                   setSelectedCategory(catId);
-                  setActiveTab('menu');
                 }}
               />
 
-              {/* Popular Picks Section */}
-              <div className="px-4 sm:px-6 pt-1">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-base sm:text-lg font-bold text-[#221610] tracking-tight">
-                    Popular Picks
-                  </h2>
+              {/* Filter Badges Filter (All Items / ★ Bestsellers / 👨‍🍳 Chef's Pick / 🔥 Popular) */}
+              <div className="px-4 sm:px-6 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                <span className="text-[11px] font-bold text-roast/50 uppercase tracking-wider flex-shrink-0">
+                  Filter:
+                </span>
+                {[
+                  { id: 'all', label: 'All Items' },
+                  { id: 'bestseller', label: '★ Bestsellers' },
+                  { id: 'chef', label: "👨‍🍳 Chef's Pick" },
+                  { id: 'popular', label: '🔥 Popular' },
+                ].map((tab) => (
                   <button
-                    onClick={() => setActiveTab('menu')}
-                    className="text-xs font-bold text-caramel hover:text-caramel-hover flex items-center gap-1 transition-colors"
+                    key={tab.id}
+                    onClick={() => setFilterTag(tab.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex-shrink-0 ${
+                      filterTag === tab.id
+                        ? 'bg-roast text-white shadow-sm'
+                        : 'bg-white border border-[#EDE3D5] text-roast/70 hover:border-caramel/50'
+                    }`}
                   >
-                    <span>View All</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {tab.label}
                   </button>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {(popularPicks.length > 0 ? popularPicks : menuItems.slice(0, 3)).map((item) => (
-                    <MenuItemCard
-                      key={item.id}
-                      item={item}
-                      onSelect={(it) => setCustomizingItem(it)}
-                    />
-                  ))}
-                </div>
+                ))}
               </div>
 
-              {/* Weekend Special Promo Card */}
-              <div className="px-4 sm:px-6 pt-2">
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#F4ECE1] to-[#EAE0D1] border border-[#E0D2C0] p-4 sm:p-5 flex items-center justify-between shadow-cafe-sm">
-                  {/* Left Column: Promo Details */}
-                  <div className="flex-1 max-w-[65%] z-10">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-caramel">
-                      Weekend Special
-                    </span>
-                    <h3 className="text-2xl sm:text-3xl font-display font-extrabold text-[#221610] tracking-tight leading-none mt-1 mb-1">
-                      20% OFF
-                    </h3>
-                    <p className="text-xs text-[#221610]/70 font-medium mb-3">
-                      On all iced coffee & cold brew orders
-                    </p>
-                    <button
-                      onClick={() => handleQuickOrderNow('cold-brew')}
-                      className="inline-flex items-center gap-1.5 bg-[#221610] hover:bg-caramel text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full transition-all shadow-cafe-sm active:scale-95"
-                    >
-                      <span>ORDER NOW</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-
-                  {/* Right Column: Visual with 20% OFF Badge */}
-                  <div className="relative w-[35%] flex items-center justify-end">
-                    <div className="relative w-24 h-24 sm:w-28 sm:h-28">
-                      <img
-                        src="/images/spanish_latte.png"
-                        alt="Special drink"
-                        className="w-full h-full object-cover rounded-2xl shadow-md transform rotate-2"
-                      />
-                      <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-[#221610] text-[#FAF6F0] flex flex-col items-center justify-center shadow-cafe-sm border-2 border-white">
-                        <span className="text-[11px] font-extrabold leading-none">20%</span>
-                        <span className="text-[7px] font-bold uppercase tracking-tighter">OFF</span>
-                      </div>
-                    </div>
-                  </div>
+              {/* Full Scrollable Menu List replacing the 20% off card */}
+              <div className="px-4 sm:px-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-bold text-roast uppercase tracking-wider">
+                    {selectedCategory === 'all'
+                      ? 'Our Full Menu'
+                      : `${categories.find((c) => c.id === selectedCategory)?.name || 'Category'} Menu`}
+                  </h2>
+                  <span className="text-xs text-roast/50 font-medium">
+                    {filteredHomeItems.length} {filteredHomeItems.length === 1 ? 'item' : 'items'}
+                  </span>
                 </div>
+
+                {filteredHomeItems.length === 0 ? (
+                  <div className="text-center py-12 bg-white rounded-3xl border border-[#EDE3D5] p-6">
+                    <Sparkles className="w-8 h-8 text-caramel mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-bold text-roast">No items found</p>
+                    <p className="text-xs text-roast/60 mt-1">
+                      Try adjusting your search query or category filter.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                    {filteredHomeItems.map((item) => (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onSelect={(it) => setCustomizingItem(it)}
+                        isFavorite={favorites.includes(item.id)}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* TAB 2: MENU */}
-          {activeTab === 'menu' && (
-            <div className="pt-2 pb-28">
-              <MenuTab
-                categories={categories}
-                menuItems={menuItems}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onSelectItem={(item) => setCustomizingItem(item)}
-              />
-            </div>
+          {/* TAB 2: FAVORITES (Customer Saved Items with Heart Toggle) */}
+          {activeTab === 'favorites' && (
+            <FavoritesTab
+              menuItems={menuItems}
+              favorites={favorites}
+              onToggleFavorite={toggleFavorite}
+              onSelectItem={(item) => setCustomizingItem(item)}
+              onExploreMenu={() => {
+                setActiveTab('home');
+                setSelectedCategory('all');
+              }}
+            />
           )}
 
           {/* TAB 3: TRACKING */}
@@ -309,7 +346,7 @@ function MainApp() {
             <div className="pt-2 pb-28">
               <LiveOrderTracker
                 orderCode={activeOrderCode}
-                onBackToMenu={() => setActiveTab('menu')}
+                onBackToMenu={() => setActiveTab('home')}
               />
             </div>
           )}
@@ -335,6 +372,8 @@ function MainApp() {
           item={customizingItem}
           isOpen={Boolean(customizingItem)}
           onClose={() => setCustomizingItem(null)}
+          isFavorite={Boolean(customizingItem && favorites.includes(customizingItem.id))}
+          onToggleFavorite={toggleFavorite}
         />
 
         {/* Cart & Checkout Drawer */}

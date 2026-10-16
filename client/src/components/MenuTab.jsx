@@ -11,6 +11,8 @@ export default function MenuTab({
   searchQuery,
   setSearchQuery,
   onSelectItem,
+  favorites = [],
+  onToggleFavorite,
 }) {
   const [filterTag, setFilterTag] = useState('all'); // 'all' | 'bestseller' | 'chef' | 'popular'
 
@@ -98,7 +100,13 @@ export default function MenuTab({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {filteredItems.map((item) => (
-              <MenuItemCard key={item.id} item={item} onSelect={onSelectItem} />
+              <MenuItemCard
+                key={item.id}
+                item={item}
+                onSelect={onSelectItem}
+                isFavorite={favorites.includes(item.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
             ))}
           </div>
         )}

@@ -316,8 +316,8 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
         </button>
 
         {/* Elegant Top Brand Pill */}
-        <div className="flex items-center gap-2 bg-[#221610]/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-lg">
-          <Coffee className="w-4 h-4 text-caramel-gold fill-caramel-gold/30" />
+        <div className="flex items-center gap-2 bg-[#221610]/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 shadow-lg">
+          <img src="/images/kape_muna_logo.png" alt="Kape Muna Logo" className="w-5 h-5 object-contain" />
           <span className="font-display font-bold text-sm tracking-wide text-[#FAF6F0]">
             Kape Muna
           </span>
@@ -331,6 +331,9 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
         
         {/* Header Greeting */}
         <div className="text-center mb-6">
+          <div className="w-14 h-14 mx-auto mb-2 rounded-2xl bg-white border border-[#EDE3D5] p-1.5 shadow-sm flex items-center justify-center">
+            <img src="/images/kape_muna_logo.png" alt="Kape Muna Logo" className="w-full h-full object-contain" />
+          </div>
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#221610] tracking-tight">
             {mode === 'signin' ? 'Welcome Back!' : 'Join Kape Muna'}
           </h2>

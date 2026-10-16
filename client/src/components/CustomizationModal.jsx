@@ -14,7 +14,13 @@ import {
 import { useCart } from '../context/CartContext';
 import { FALLBACK_IMAGE } from '../data/menuData';
 
-export default function CustomizationModal({ item, isOpen, onClose }) {
+export default function CustomizationModal({
+  item,
+  isOpen,
+  onClose,
+  isFavorite = false,
+  onToggleFavorite,
+}) {
   const { addToCart, setIsCartOpen } = useCart();
 
   // Drink customization states
@@ -205,14 +211,32 @@ export default function CustomizationModal({ item, isOpen, onClose }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#221610] via-black/30 to-black/50" />
 
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-all backdrop-blur-md shadow-md z-20"
-            aria-label="Close modal"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          {/* Top Actions: Favorite & Close */}
+          <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
+            {onToggleFavorite && (
+              <button
+                onClick={() => onToggleFavorite(item.id)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all backdrop-blur-md shadow-md active:scale-90 ${
+                  isFavorite
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-black/60 text-white hover:bg-black/80'
+                }`}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <Heart
+                  className={`w-4 h-4 ${isFavorite ? 'fill-white text-white' : ''}`}
+                  strokeWidth={isFavorite ? 2.5 : 2}
+                />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-all backdrop-blur-md shadow-md active:scale-90"
+              aria-label="Close modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
           {/* Item Info Overlay */}
           <div className="absolute bottom-3 left-4 right-4 text-white z-10">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BookOpen, Coffee, Gift, User, ShoppingBag } from 'lucide-react';
+import { Home, Heart, Coffee, Gift, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export default function BottomNav({ activeTab, onSelectTab }) {
@@ -7,7 +7,7 @@ export default function BottomNav({ activeTab, onSelectTab }) {
 
   const navItems = [
     { id: 'home', label: 'Home', icon: Home },
-    { id: 'menu', label: 'Menu', icon: BookOpen },
+    { id: 'favorites', label: 'Favorites', icon: Heart },
     { id: 'order', label: 'Order', icon: Coffee, isCenter: true },
     { id: 'tracking', label: 'Track', icon: Gift, hasActiveBadge: Boolean(activeOrderCode) },
     { id: 'profile', label: 'Profile', icon: User },
@@ -26,17 +26,17 @@ export default function BottomNav({ activeTab, onSelectTab }) {
 
             if (item.isCenter) {
               return (
-                <div key={item.id} className="relative -top-4 sm:-top-5 flex flex-col items-center">
+                <div key={item.id} className="relative -top-5 sm:-top-6 flex flex-col items-center">
                   <button
                     onClick={() => onSelectTab(item.id)}
-                    className={`relative w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-cafe-lg transition-all duration-300 active:scale-90 ${
+                    className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-cafe-lg transition-all duration-300 active:scale-90 border-2 border-[#F8F4EE] ${
                       isActive
-                        ? 'bg-[#2A1810] text-[#FAF6F0] ring-4 ring-caramel/30 scale-105'
+                        ? 'bg-caramel text-white ring-4 ring-caramel/30 scale-105 shadow-xl'
                         : 'bg-[#2A1810] text-[#FAF6F0] hover:bg-caramel hover:scale-105'
                     }`}
                     aria-label="Order & Cart"
                   >
-                    <Icon className="w-6 h-6 text-caramel-gold" strokeWidth={2} />
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-caramel-gold" strokeWidth={2.2} />
 
                     {/* Cart Item Badge */}
                     {cartCount > 0 && (
@@ -47,7 +47,7 @@ export default function BottomNav({ activeTab, onSelectTab }) {
                   </button>
                   <span
                     className={`text-[10px] sm:text-[11px] font-bold mt-1 tracking-tight ${
-                      isActive ? 'text-caramel' : 'text-[#221610]/70'
+                      isActive ? 'text-caramel font-extrabold' : 'text-[#221610]/75'
                     }`}
                   >
                     {item.label}

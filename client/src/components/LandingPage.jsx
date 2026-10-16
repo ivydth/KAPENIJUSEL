@@ -19,11 +19,9 @@ export default function LandingPage({ onGetStarted, onSignInClick }) {
 
       {/* 1. Header / Brand Bar */}
       <header className="relative z-10 pt-6 sm:pt-8 px-6 flex flex-col items-center text-center">
-        {/* Coffee Bean Logo Icon */}
-        <div className="w-12 h-12 rounded-full bg-[#EFE4D4] border border-[#DFCBB5] flex items-center justify-center shadow-cafe-sm mb-2 transform hover:scale-105 transition-transform">
-          <div className="relative">
-            <Coffee className="w-6 h-6 text-caramel fill-caramel/25" strokeWidth={2.2} />
-          </div>
+        {/* Coffee Logo Icon */}
+        <div className="w-14 h-14 rounded-full bg-white border border-[#DFCBB5] flex items-center justify-center shadow-cafe-sm mb-2 transform hover:scale-105 transition-transform overflow-hidden p-1.5">
+          <img src="/images/kape_muna_logo.png" alt="Kape Muna Logo" className="w-full h-full object-contain" />
         </div>
 
         {/* Brand Name */}

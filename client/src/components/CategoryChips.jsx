@@ -29,8 +29,8 @@ export default function CategoryChips({
   onSelectCategory,
 }) {
   return (
-    <div className="w-full px-4 sm:px-6 py-2">
-      <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-2 -my-2">
+    <div className="w-full py-1">
+      <div className="flex items-center gap-3.5 sm:gap-4 overflow-x-auto no-scrollbar py-3 px-4 sm:px-6 scroll-smooth snap-x">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           const IconComponent = ICON_MAP[cat.id] || Coffee;
@@ -39,9 +39,9 @@ export default function CategoryChips({
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className="group flex flex-col items-center gap-1.5 flex-shrink-0 focus:outline-none transition-all active:scale-95"
+              className="group flex flex-col items-center gap-1.5 flex-shrink-0 focus:outline-none transition-all active:scale-95 snap-start"
             >
-              {/* Circular Icon Container matching reference mockup */}
+              {/* Perfectly Sized Circular Icon Container */}
               <div
                 className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border transition-all duration-300 shadow-cafe-sm ${
                   isSelected
@@ -68,7 +68,7 @@ export default function CategoryChips({
 
               {/* Active Indicator Dot */}
               <span
-                className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                   isSelected ? 'bg-caramel scale-100' : 'bg-transparent scale-0'
                 }`}
               />
