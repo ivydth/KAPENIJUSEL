@@ -128,17 +128,10 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
 
         if (error) throw error;
 
-        const customer = {
-          id: data.user?.id || `user-${Date.now()}`,
-          full_name: fullName.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          branch_name: 'Kape Muna — Main Branch',
-        };
-
-        localStorage.setItem('kape_muna_user', JSON.stringify(customer));
-        setSuccessMsg('Account created! Welcome to Kape Muna.');
-        setTimeout(() => onAuthSuccess(customer), 600);
+        // Switch to signin mode instead of auto-logging in
+        setMode('signin');
+        setPassword('');
+        setSuccessMsg('Account created successfully! Please sign in with your password to start ordering.');
         return;
       }
 
@@ -160,9 +153,10 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
         throw new Error(data.error || 'Registration failed.');
       }
 
-      localStorage.setItem('kape_muna_user', JSON.stringify(data.user));
-      setSuccessMsg('Account created successfully! Welcome to Kape Muna.');
-      setTimeout(() => onAuthSuccess(data.user), 600);
+      // Switch to signin mode instead of auto-logging in
+      setMode('signin');
+      setPassword('');
+      setSuccessMsg('Account created successfully! Please sign in with your password to start ordering.');
     } catch (err) {
       console.error('Registration error:', err);
       setErrorMsg(err.message || 'Failed to create account.');
@@ -186,7 +180,7 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
       <div className="relative z-10 w-full max-w-md mx-auto flex items-center justify-between mb-2 pt-2">
         <button
           onClick={onBackToLanding}
-          className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur-md text-white border border-white/30 flex items-center justify-center transition-all shadow-lg active:scale-95"
+          className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/35 backdrop-blur-md text-white border border-white/30 flex items-center justify-center transition-all shadow-lg active:scale-95 cursor-pointer"
           aria-label="Back to landing page"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -204,52 +198,18 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
       </div>
 
       {/* Main Glassmorphic Auth Card */}
-      <div className="relative z-10 w-full max-w-md mx-auto bg-[#FDFBF7]/95 sm:bg-[#FDFBF7]/95 backdrop-blur-2xl border border-white/60 rounded-3xl p-5 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.5)] my-auto transition-all animate-in fade-in zoom-in-95 duration-300">
+      <div className="relative z-10 w-full max-w-md mx-auto bg-[#FDFBF7]/95 sm:bg-[#FDFBF7]/95 backdrop-blur-2xl border border-white/60 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] my-auto transition-all animate-in fade-in zoom-in-95 duration-300">
         
         {/* Header Greeting */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#221610] tracking-tight">
             {mode === 'signin' ? 'Welcome Back!' : 'Join Kape Muna'}
           </h2>
-          <p className="text-xs text-[#221610]/70 mt-1 font-medium italic">
+          <p className="text-xs text-[#221610]/70 mt-1.5 font-medium italic">
             {mode === 'signin'
               ? 'Your freshly brewed pause is waiting for you.'
               : 'Create your account and savor every sip.'}
           </p>
-        </div>
-
-        {/* Segmented Mode Switcher Tabs */}
-        <div className="grid grid-cols-2 gap-1.5 bg-[#EFE8DD] p-1 rounded-2xl mb-4 border border-[#E2D5C4]/80">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signin');
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            className={`py-2 text-xs font-bold rounded-xl transition-all ${
-              mode === 'signin'
-                ? 'bg-[#221610] text-[#FAF6F0] shadow-md'
-                : 'text-[#221610]/70 hover:text-[#221610]'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signup');
-              setErrorMsg('');
-              setSuccessMsg('');
-            }}
-            className={`py-2 text-xs font-bold rounded-xl transition-all ${
-              mode === 'signup'
-                ? 'bg-[#221610] text-[#FAF6F0] shadow-md'
-                : 'text-[#221610]/70 hover:text-[#221610]'
-            }`}
-          >
-            Create Account
-          </button>
         </div>
 
         {/* Feedback Alert Banners */}
@@ -440,15 +400,19 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
         )}
 
         {/* Switch Mode Prompt Link */}
-        <div className="mt-4 pt-3 border-t border-[#EDE3D5] text-center">
-          <p className="text-xs text-[#221610]/70">
+        <div className="mt-5 pt-3.5 border-t border-[#EDE3D5]/80 text-center">
+          <p className="text-xs text-[#221610]/75">
             {mode === 'signin' ? (
               <>
                 Don't have an account yet?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('signup')}
-                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-2 ml-0.5"
+                  onClick={() => {
+                    setMode('signup');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-4 ml-1 cursor-pointer transition-colors py-0.5"
                 >
                   Create one now
                 </button>
@@ -458,8 +422,12 @@ export default function AuthPage({ initialMode = 'signin', onBackToLanding, onAu
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('signin')}
-                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-2 ml-0.5"
+                  onClick={() => {
+                    setMode('signin');
+                    setErrorMsg('');
+                    setSuccessMsg('');
+                  }}
+                  className="font-bold text-caramel hover:text-caramel-hover underline underline-offset-4 ml-1 cursor-pointer transition-colors py-0.5"
                 >
                   Sign In
                 </button>
