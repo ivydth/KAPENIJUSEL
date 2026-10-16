@@ -25,14 +25,9 @@ export default function MenuItemCard({ item, onSelect }) {
         {/* Product Photo Container */}
         <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#F3EDE2] mb-3">
           <img
-            src={image_url || FALLBACK_IMAGE}
+            src={image_url}
             alt={name}
-            onError={(e) => {
-              if (e.target.src !== FALLBACK_IMAGE) {
-                e.target.onerror = null;
-                e.target.src = FALLBACK_IMAGE;
-              }
-            }}
+            onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80'; }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />

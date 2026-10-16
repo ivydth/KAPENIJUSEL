@@ -16,9 +16,11 @@ export default function MenuTab({
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
-      // Category filter
+      // Category filter (supports both cold_brew / cold-brew and non_coffee / non-coffee)
       if (selectedCategory && selectedCategory !== 'all') {
-        if (item.category_id !== selectedCategory) return false;
+        const normSelected = selectedCategory.replace(/-/g, '_');
+        const normItemCat = (item.category_id || '').replace(/-/g, '_');
+        if (normItemCat !== normSelected) return false;
       }
 
       // Tag filter
