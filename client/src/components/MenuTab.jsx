@@ -53,9 +53,6 @@ export default function MenuTab({
 
       {/* Filter Badges Filter (Bestsellers / Chef's Pick / Popular) */}
       <div className="px-4 sm:px-6 flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <span className="text-[11px] font-bold text-roast/50 uppercase tracking-wider flex-shrink-0">
-          Filter:
-        </span>
         {[
           { id: 'all', label: 'All Items' },
           { id: 'bestseller', label: '★ Bestsellers' },

@@ -182,8 +182,7 @@ export default function CustomizationModal({
     setTimeout(() => {
       setIsSuccessToast(false);
       onClose();
-      setIsCartOpen(true);
-    }, 450);
+    }, 350);
   };
 
   return (
@@ -196,8 +195,18 @@ export default function CustomizationModal({
         className="w-full sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] bg-[#FDFBF7] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-6 duration-300 border border-[#EAE1D3]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Compact, Appetizing Photo Banner */}
-        <div className="relative h-36 sm:h-44 w-full bg-[#2A1810] flex-shrink-0">
+        {/* Full, Appetizing Photo Banner showing the WHOLE picture without cutting off */}
+        <div className="relative h-48 sm:h-56 w-full bg-[#1C120B] flex-shrink-0 flex items-center justify-center overflow-hidden">
+          {/* Ambient blurred backdrop for seamless color fill */}
+          <img
+            src={item.image_url || FALLBACK_IMAGE}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-125"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#221610] via-black/20 to-black/40" />
+
+          {/* Crisp, Full Unclipped Product Picture */}
           <img
             src={item.image_url || FALLBACK_IMAGE}
             alt={item.name}
@@ -207,9 +216,8 @@ export default function CustomizationModal({
                 e.target.src = FALLBACK_IMAGE;
               }
             }}
-            className="w-full h-full object-cover opacity-90"
+            className="relative z-10 max-h-full max-w-full object-contain p-2 drop-shadow-2xl"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#221610] via-black/30 to-black/50" />
 
           {/* Top Actions: Favorite & Close */}
           <div className="absolute top-3 right-3 flex items-center gap-2 z-20">
@@ -390,7 +398,7 @@ export default function CustomizationModal({
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {SWEETNESS.map((sw) => {
-                    const isSelected = selectedSweetness.includes(sw.label);
+                    const isSelected = selectedSweetness.startsWith(sw.label);
                     return (
                       <button
                         key={sw.id}

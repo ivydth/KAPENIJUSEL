@@ -80,7 +80,14 @@ function MainApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [customizingItem, setCustomizingItem] = useState(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [unreadCount, setUnreadCount] = useState(() => {
+    try {
+      const isRead = localStorage.getItem('kape_muna_notifications_read');
+      return isRead === 'true' ? 0 : 3;
+    } catch {
+      return 0;
+    }
+  });
 
   // Customer Favorites state with local persistence
   const [favorites, setFavorites] = useState(() => {
@@ -243,6 +250,9 @@ function MainApp() {
           onOpenNotifications={() => {
             setIsNotificationsOpen(true);
             setUnreadCount(0);
+            try {
+              localStorage.setItem('kape_muna_notifications_read', 'true');
+            } catch {}
           }}
           onToggleSideMenu={() => setActiveTab('profile')}
         />
@@ -266,9 +276,6 @@ function MainApp() {
 
               {/* Filter Badges Filter (All Items / ★ Bestsellers / 👨‍🍳 Chef's Pick / 🔥 Popular) */}
               <div className="px-4 sm:px-6 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                <span className="text-[11px] font-bold text-roast/50 uppercase tracking-wider flex-shrink-0">
-                  Filter:
-                </span>
                 {[
                   { id: 'all', label: 'All Items' },
                   { id: 'bestseller', label: '★ Bestsellers' },

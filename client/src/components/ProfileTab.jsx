@@ -255,39 +255,6 @@ export default function ProfileTab({ currentUser, onTrackOrder, onSignOut, onUpd
         </div>
       )}
 
-      {/* System & Architecture Info */}
-      <div className="bg-[#FDFBF7] border border-[#ECE2D3] rounded-3xl p-5 shadow-cafe-sm space-y-3">
-        <h3 className="text-xs font-bold text-roast uppercase tracking-wider flex items-center gap-1.5">
-          <Database className="w-4 h-4 text-caramel" />
-          System & Realtime Diagnostics
-        </h3>
-
-        <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EDE3D5]">
-            <span className="text-roast/70">Database Provider</span>
-            <span className="font-bold text-roast">
-              {isSupabaseConfigured ? 'Supabase Cloud (PostgreSQL)' : 'Express Local Engine'}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EDE3D5]">
-            <span className="text-roast/70">Realtime Channel</span>
-            <span className="font-bold text-emerald-700 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              {isSupabaseConfigured ? 'Supabase WebSocket (orders)' : 'Active SSE Event Stream'}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#EDE3D5]">
-            <span className="text-roast/70">Row-Level Security</span>
-            <span className="font-bold text-roast flex items-center gap-1 text-emerald-700">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              RLS Policies Active
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Past Order History */}
       <div className="bg-[#FDFBF7] border border-[#ECE2D3] rounded-3xl p-5 shadow-cafe-sm space-y-3">
         <h3 className="text-xs font-bold text-roast uppercase tracking-wider flex items-center gap-1.5">

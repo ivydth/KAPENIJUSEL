@@ -361,69 +361,6 @@ export default function LiveOrderTracker({ orderCode, onBackToMenu }) {
         </div>
       )}
 
-      {/* Interactive Barista & Supabase Event Simulator (For Testing and Demonstration) */}
-      <div className="p-4 rounded-3xl bg-[#FAF6F0] border border-[#ECE2D3] space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-            <h4 className="text-xs font-bold text-roast uppercase tracking-wider">
-              Supabase Realtime Simulator
-            </h4>
-          </div>
-          <button
-            onClick={() => setShowSimControls((s) => !s)}
-            className="text-[11px] text-caramel font-bold hover:underline"
-          >
-            {showSimControls ? 'Hide Barista Controls' : 'Show Barista Controls'}
-          </button>
-        </div>
-
-        {showSimControls && (
-          <div className="space-y-2 pt-1 border-t border-[#ECE2D3]">
-            <p className="text-[11px] text-roast/70">
-              Simulate barista updates to verify realtime WebSocket/SSE events in the UI:
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <button
-                onClick={() => updateStatusSimulation('Queued', 'paid')}
-                disabled={order.status === 'Cancelled'}
-                className="py-1.5 px-2 bg-white border border-[#EDE3D5] rounded-xl text-[11px] font-semibold text-roast hover:bg-cream-chip disabled:opacity-40"
-              >
-                ➔ Mark: Queued
-              </button>
-              <button
-                onClick={() => updateStatusSimulation('Preparing', 'paid')}
-                disabled={order.status === 'Cancelled'}
-                className="py-1.5 px-2 bg-white border border-[#EDE3D5] rounded-xl text-[11px] font-semibold text-caramel hover:bg-cream-chip disabled:opacity-40"
-              >
-                ➔ Mark: Preparing
-              </button>
-              <button
-                onClick={() => updateStatusSimulation('Ready for Pickup', 'paid')}
-                disabled={order.status === 'Cancelled'}
-                className="py-1.5 px-2 bg-white border border-emerald-200 rounded-xl text-[11px] font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-40"
-              >
-                ➔ Mark: Ready 🎉
-              </button>
-              <button
-                onClick={() => updateStatusSimulation('Completed', 'paid')}
-                disabled={order.status === 'Cancelled'}
-                className="py-1.5 px-2 bg-white border border-gray-300 rounded-xl text-[11px] font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-40"
-              >
-                ➔ Mark: Completed
-              </button>
-              <button
-                onClick={() => updateStatusSimulation('Pending Payment', 'pending')}
-                disabled={order.status === 'Cancelled'}
-                className="py-1.5 px-2 bg-white border border-amber-200 rounded-xl text-[11px] font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-40"
-              >
-                ➔ Mark: Pay Counter
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Confirmation Modal for Order Cancellation */}
       {cancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

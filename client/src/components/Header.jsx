@@ -34,20 +34,22 @@ export default function Header({
     <header className="w-full bg-[#F8F4EE] pt-3 sm:pt-4 pb-2 px-4 sm:px-6 sticky top-0 z-30 transition-all border-b border-[#EDE3D5]/60 backdrop-blur-md bg-[#F8F4EE]/95">
       {/* Top Utility & Brand Bar */}
       <div className="flex items-center justify-between gap-3 mb-2">
-        {/* Left: User Profile Avatar & Greeting (Repositioned to replace 3-lines button) */}
+        {/* Left: User Profile Avatar & Greeting (Adjusted for clear view) */}
         <button
           onClick={onToggleSideMenu}
-          className="flex items-center gap-2.5 sm:gap-3 text-left focus:outline-none group active:scale-95 transition-all"
+          className="flex items-center gap-3 text-left focus:outline-none group active:scale-95 transition-all"
           aria-label="User Profile"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-caramel to-caramel-light text-white font-bold text-xs flex items-center justify-center shadow-sm border border-white/60 group-hover:scale-105 transition-transform">
+          <div className="w-11 h-11 rounded-full bg-[#381F12] text-[#FAF6F0] font-bold text-sm flex items-center justify-center shadow-md border-2 border-white/90 group-hover:scale-105 transition-transform flex-shrink-0">
             {initials}
           </div>
-          <div>
-            <p className="text-xs sm:text-sm text-roast font-bold leading-tight flex items-center gap-1">
-              <span>{greeting},</span>
-              <span className="text-caramel capitalize">{firstName}!</span>
-            </p>
+          <div className="flex flex-col">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-caramel">
+              Welcome back
+            </span>
+            <span className="text-sm sm:text-base font-extrabold text-roast leading-snug">
+              {greeting}, <span className="capitalize text-[#2A1810]">{firstName}!</span>
+            </span>
           </div>
         </button>
 
