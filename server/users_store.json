@@ -1,0 +1,24 @@
+[
+  [
+    "jusselle@kapemuna.local",
+    {
+      "id": "usr-jusselle-1",
+      "full_name": "Jusselle Surio",
+      "email": "jusselle@kapemuna.local",
+      "phone": "0917-888-2468",
+      "password": "password123",
+      "branch_name": "Kape Muna — Main Branch"
+    }
+  ],
+  [
+    "testcustomer@kapemuna.local",
+    {
+      "id": "usr-1792137461014",
+      "full_name": "Test Customer Updated",
+      "email": "testcustomer@kapemuna.local",
+      "phone": "0919-555-9999",
+      "password": "mypassword123",
+      "branch_name": "Kape Muna — Main Branch"
+    }
+  ]
+]

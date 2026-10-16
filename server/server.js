@@ -194,19 +194,52 @@ app.get('/api/menu', async (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
-// Customer Authentication Endpoints
+// Customer Authentication Endpoints with Persistent Disk Storage
 // ----------------------------------------------------------------------------
+const USERS_FILE = path.join(__dirname, 'users_store.json');
 const usersMap = new Map();
 
-// Default demo customer
-usersMap.set('jusselle@kapemuna.local', {
-  id: 'usr-jusselle-1',
-  full_name: 'Jusselle Surio',
-  email: 'jusselle@kapemuna.local',
-  phone: '0917-888-2468',
-  password: 'password123',
-  branch_name: 'Kape Muna — Main Branch'
-});
+function saveUsersToDisk() {
+  try {
+    const list = Array.from(usersMap.entries());
+    fs.writeFileSync(USERS_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Failed to save users to disk:', e);
+  }
+}
+
+function loadUsersFromDisk() {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
+      if (Array.isArray(data)) {
+        data.forEach(([k, v]) => {
+          if (k && v) {
+            usersMap.set(String(k).toLowerCase().trim(), v);
+          }
+        });
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load users from disk:', e);
+  }
+
+  // Ensure default demo customer is always available
+  if (!usersMap.has('jusselle@kapemuna.local')) {
+    usersMap.set('jusselle@kapemuna.local', {
+      id: 'usr-jusselle-1',
+      full_name: 'Jusselle Surio',
+      email: 'jusselle@kapemuna.local',
+      phone: '0917-888-2468',
+      password: 'password123',
+      branch_name: 'Kape Muna — Main Branch'
+    });
+    saveUsersToDisk();
+  }
+}
+
+// Load persisted accounts on server launch
+loadUsersFromDisk();
 
 /**
  * Auth: POST /api/auth/register
@@ -220,6 +253,17 @@ app.post('/api/auth/register', (req, res) => {
 
     const normalizedEmail = email.toLowerCase().trim();
     if (usersMap.has(normalizedEmail)) {
+      const existing = usersMap.get(normalizedEmail);
+      // If same password provided, treat as safe profile update/sync
+      if (existing.password === password) {
+        existing.full_name = full_name.trim();
+        if (phone) existing.phone = phone.trim();
+        if (branch_name) existing.branch_name = branch_name;
+        usersMap.set(normalizedEmail, existing);
+        saveUsersToDisk();
+        const { password: _, ...userProfile } = existing;
+        return res.status(200).json({ success: true, user: userProfile, message: 'Account updated successfully' });
+      }
       return res.status(400).json({ success: false, error: 'An account with this email already exists' });
     }
 
@@ -233,6 +277,7 @@ app.post('/api/auth/register', (req, res) => {
     };
 
     usersMap.set(normalizedEmail, newUser);
+    saveUsersToDisk();
 
     const { password: _, ...userProfile } = newUser;
     return res.status(201).json({ success: true, user: userProfile });
@@ -255,10 +300,22 @@ app.post('/api/auth/login', (req, res) => {
     const normalized = email.toLowerCase().trim();
     let user = usersMap.get(normalized);
 
-    // Also allow login with phone number
+    // Also allow login with phone number (stripping formatting spaces/dashes)
     if (!user) {
+      const cleanInputPhone = email.trim().replace(/[\s-]/g, '');
       for (const u of usersMap.values()) {
-        if (u.phone && u.phone === email.trim()) {
+        const uPhone = (u.phone || '').trim().replace(/[\s-]/g, '');
+        if (uPhone && (uPhone === cleanInputPhone || u.phone === email.trim())) {
+          user = u;
+          break;
+        }
+      }
+    }
+
+    // Also check case-insensitive match on user email property
+    if (!user) {
+      for (const [k, u] of usersMap.entries()) {
+        if (k.toLowerCase().trim() === normalized || (u.email && u.email.toLowerCase().trim() === normalized)) {
           user = u;
           break;
         }
@@ -275,6 +332,52 @@ app.post('/api/auth/login', (req, res) => {
     console.error('Error logging in user:', err);
     return res.status(500).json({ success: false, error: 'Server login error' });
   }
+});
+
+/**
+ * Auth: POST /api/auth/update
+ * Updates user profile details (full_name, phone, branch_name, password)
+ */
+app.post('/api/auth/update', (req, res) => {
+  try {
+    const { email, full_name, phone, branch_name, new_password } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required to update profile' });
+    }
+
+    const normalized = email.toLowerCase().trim();
+    let user = usersMap.get(normalized);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'Account not found' });
+    }
+
+    if (full_name) user.full_name = full_name.trim();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (branch_name) user.branch_name = branch_name;
+    if (new_password) user.password = new_password;
+
+    usersMap.set(normalized, user);
+    saveUsersToDisk();
+
+    const { password: _, ...userProfile } = user;
+    return res.json({ success: true, user: userProfile });
+  } catch (err) {
+    console.error('Error updating user:', err);
+    return res.status(500).json({ success: false, error: 'Server profile update error' });
+  }
+});
+
+/**
+ * Auth: GET /api/auth/me
+ */
+app.get('/api/auth/me', (req, res) => {
+  const email = (req.query.email || '').toLowerCase().trim();
+  if (!email) return res.status(400).json({ success: false, error: 'Email parameter required' });
+  const user = usersMap.get(email);
+  if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+  const { password: _, ...userProfile } = user;
+  return res.json({ success: true, user: userProfile });
 });
 
 /**

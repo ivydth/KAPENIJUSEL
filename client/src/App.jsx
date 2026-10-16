@@ -25,14 +25,6 @@ import {
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 function MainApp() {
-  // Application View: 'landing' | 'auth' | 'portal'
-  const [viewState, setViewState] = useState(() => {
-    // If user has not yet entered session, show landing page first
-    return 'landing';
-  });
-
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup'
-
   // Current logged in customer state
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -42,6 +34,40 @@ function MainApp() {
       return null;
     }
   });
+
+  // Application View: 'landing' | 'auth' | 'portal'
+  // When page is refreshed, stay in portal if user is already authenticated
+  const [viewState, setViewState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kape_muna_user');
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u && (u.email || u.id)) {
+          return 'portal';
+        }
+      }
+    } catch {}
+    return 'landing';
+  });
+
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup'
+
+  // Update user profile handler across state and localStorage
+  const handleUpdateUser = (updatedProfile) => {
+    setCurrentUser(updatedProfile);
+    try {
+      localStorage.setItem('kape_muna_user', JSON.stringify(updatedProfile));
+      const rawAccounts = localStorage.getItem('kape_muna_accounts');
+      if (rawAccounts) {
+        const accounts = JSON.parse(rawAccounts);
+        const emailKey = updatedProfile.email?.toLowerCase().trim();
+        if (emailKey && accounts[emailKey]) {
+          accounts[emailKey] = { ...accounts[emailKey], ...updatedProfile };
+          localStorage.setItem('kape_muna_accounts', JSON.stringify(accounts));
+        }
+      }
+    } catch {}
+  };
 
   // Portal tab states: 'home' | 'menu' | 'tracking' | 'profile'
   const [activeTab, setActiveTab] = useState('home');
@@ -298,6 +324,7 @@ function MainApp() {
                   setActiveTab('tracking');
                 }}
                 onSignOut={handleSignOut}
+                onUpdateUser={handleUpdateUser}
               />
             </div>
           )}
@@ -311,7 +338,10 @@ function MainApp() {
         />
 
         {/* Cart & Checkout Drawer */}
-        <CartDrawer onOrderCreated={handleOrderCreated} />
+        <CartDrawer
+          onOrderCreated={handleOrderCreated}
+          currentUser={currentUser}
+        />
 
         {/* Notifications Modal */}
         <NotificationsModal

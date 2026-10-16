@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   User,
   Coffee,
@@ -12,18 +12,30 @@ import {
   Phone,
   Mail,
   Receipt,
-  LogOut
+  LogOut,
+  Edit3,
+  Check,
+  X
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 
-export default function ProfileTab({ currentUser, onTrackOrder, onSignOut }) {
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+export default function ProfileTab({ currentUser, onTrackOrder, onSignOut, onUpdateUser }) {
   const { activeOrderCode } = useCart();
 
   const name = currentUser?.full_name || 'Jusselle Surio';
   const phone = currentUser?.phone || '0917-888-2468';
   const email = currentUser?.email || 'jusselle@kapemuna.local';
   const branch = currentUser?.branch_name || 'Kape Muna — Main Branch';
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFullName, setEditFullName] = useState(name);
+  const [editPhone, setEditPhone] = useState(phone);
+  const [editBranch, setEditBranch] = useState(branch);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
 
   // Compute initials
   const initials = name
@@ -34,39 +46,168 @@ export default function ProfileTab({ currentUser, onTrackOrder, onSignOut }) {
     .join('')
     .toUpperCase() || 'KM';
 
+  const handleSaveProfile = async (e) => {
+    e?.preventDefault();
+    if (!editFullName.trim()) return;
+
+    setSaveLoading(true);
+    setSaveMsg('');
+
+    const updatedProfile = {
+      ...(currentUser || {}),
+      full_name: editFullName.trim(),
+      phone: editPhone.trim(),
+      branch_name: editBranch,
+      email: email,
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          full_name: editFullName.trim(),
+          phone: editPhone.trim(),
+          branch_name: editBranch,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        onUpdateUser?.(data.user);
+      } else {
+        onUpdateUser?.(updatedProfile);
+      }
+    } catch {
+      onUpdateUser?.(updatedProfile);
+    } finally {
+      setSaveLoading(false);
+      setSaveMsg('Profile updated!');
+      setTimeout(() => {
+        setIsEditing(false);
+        setSaveMsg('');
+      }, 1000);
+    }
+  };
+
   return (
     <div className="px-4 sm:px-6 py-4 space-y-4 max-w-2xl mx-auto pb-28">
       {/* Profile Header Card */}
-      <div className="bg-[#FDFBF7] border border-[#ECE2D3] rounded-3xl p-5 shadow-cafe-sm flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-caramel to-caramel-light text-white font-bold text-xl flex items-center justify-center shadow-cafe-md border-2 border-white flex-shrink-0">
-          {initials}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-lg font-bold text-roast truncate">{name}</h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-caramel-gold/15 text-caramel-gold border border-caramel-gold/30">
-              Gold Member
-            </span>
+      <div className="bg-[#FDFBF7] border border-[#ECE2D3] rounded-3xl p-5 shadow-cafe-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-caramel to-caramel-light text-white font-bold text-xl flex items-center justify-center shadow-cafe-md border-2 border-white flex-shrink-0">
+            {initials}
           </div>
 
-          <div className="text-xs text-roast/60 space-y-0.5 mt-1">
-            <p className="flex items-center gap-1.5 truncate">
-              <Mail className="w-3 h-3 text-caramel flex-shrink-0" />
-              <span>{email}</span>
-            </p>
-            {phone && (
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h2 className="text-lg font-bold text-roast truncate">{name}</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-caramel-gold/15 text-caramel-gold border border-caramel-gold/30 flex-shrink-0">
+                  Gold Member
+                </span>
+              </div>
+
+              {!isEditing && (
+                <button
+                  onClick={() => {
+                    setEditFullName(name);
+                    setEditPhone(phone);
+                    setEditBranch(branch);
+                    setIsEditing(true);
+                  }}
+                  className="px-2.5 py-1 text-xs font-bold text-caramel hover:text-caramel-hover bg-caramel/10 hover:bg-caramel/20 rounded-full flex items-center gap-1 transition-all cursor-pointer flex-shrink-0"
+                >
+                  <Edit3 className="w-3 h-3" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+
+            <div className="text-xs text-roast/60 space-y-0.5 mt-1">
+              <p className="flex items-center gap-1.5 truncate">
+                <Mail className="w-3 h-3 text-caramel flex-shrink-0" />
+                <span>{email}</span>
+              </p>
+              {phone && (
+                <p className="flex items-center gap-1.5">
+                  <Phone className="w-3 h-3 text-caramel flex-shrink-0" />
+                  <span>{phone}</span>
+                </p>
+              )}
               <p className="flex items-center gap-1.5">
-                <Phone className="w-3 h-3 text-caramel flex-shrink-0" />
-                <span>{phone}</span>
+                <MapPin className="w-3 h-3 text-caramel flex-shrink-0" />
+                <span className="truncate">{branch}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Inline Edit Profile Form */}
+        {isEditing && (
+          <form onSubmit={handleSaveProfile} className="mt-4 pt-4 border-t border-[#ECE2D3] space-y-3">
+            <h3 className="text-xs font-bold text-roast uppercase tracking-wider">Update Account Details</h3>
+            <div>
+              <label className="block text-[11px] font-bold text-roast/70 mb-1">Full Name</label>
+              <input
+                type="text"
+                value={editFullName}
+                onChange={(e) => setEditFullName(e.target.value)}
+                className="w-full px-3 py-2 bg-white rounded-xl border border-[#EDE3D5] text-xs text-roast focus:outline-none focus:border-caramel"
+                placeholder="Full name"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-roast/70 mb-1">Phone Number</label>
+              <input
+                type="text"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                className="w-full px-3 py-2 bg-white rounded-xl border border-[#EDE3D5] text-xs text-roast focus:outline-none focus:border-caramel"
+                placeholder="Phone (e.g. 0917-888-2468)"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-roast/70 mb-1">Preferred Branch</label>
+              <select
+                value={editBranch}
+                onChange={(e) => setEditBranch(e.target.value)}
+                className="w-full px-3 py-2 bg-white rounded-xl border border-[#EDE3D5] text-xs text-roast focus:outline-none focus:border-caramel"
+              >
+                <option value="Kape Muna — Main Branch">Kape Muna — Main Branch</option>
+                <option value="Kape Muna — BGC Boutique">Kape Muna — BGC Boutique</option>
+                <option value="Kape Muna — Makati Poblacion">Kape Muna — Makati Poblacion</option>
+                <option value="Kape Muna — Tagaytay Ridge">Kape Muna — Tagaytay Ridge</option>
+              </select>
+            </div>
+
+            {saveMsg && (
+              <p className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" />
+                <span>{saveMsg}</span>
               </p>
             )}
-            <p className="flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 text-caramel flex-shrink-0" />
-              <span className="truncate">{branch}</span>
-            </p>
-          </div>
-        </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={saveLoading}
+                className="flex-1 py-2 px-3 rounded-xl bg-[#221610] hover:bg-caramel text-white text-xs font-bold transition-all disabled:opacity-50"
+              >
+                {saveLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="py-2 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-roast text-xs font-bold transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       {/* Coffee Beans Loyalty Points Card */}

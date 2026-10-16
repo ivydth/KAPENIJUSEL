@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Trash2,
@@ -18,7 +18,7 @@ import { FALLBACK_IMAGE } from '../data/menuData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export default function CartDrawer({ onOrderCreated }) {
+export default function CartDrawer({ onOrderCreated, currentUser }) {
   const {
     cartItems,
     removeFromCart,
@@ -36,11 +36,21 @@ export default function CartDrawer({ onOrderCreated }) {
   const [onlineProvider, setOnlineProvider] = useState('GCash'); // 'GCash' | 'Maya'
   const [paymentReference, setPaymentReference] = useState('');
   const [pickupTime, setPickupTime] = useState('ASAP (10-15 mins)');
-  const [customerName, setCustomerName] = useState('Jusselle Surio');
-  const [customerPhone, setCustomerPhone] = useState('0917-888-2468');
+  const [customerName, setCustomerName] = useState(() => currentUser?.full_name || 'Jusselle Surio');
+  const [customerPhone, setCustomerPhone] = useState(() => currentUser?.phone || '0917-888-2468');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Synchronize when current logged in user changes
+  useEffect(() => {
+    if (currentUser?.full_name) {
+      setCustomerName(currentUser.full_name);
+    }
+    if (currentUser?.phone) {
+      setCustomerPhone(currentUser.phone);
+    }
+  }, [currentUser]);
 
   // Handle Order Type Switch changes
   const handleOrderTypeChange = (type) => {
