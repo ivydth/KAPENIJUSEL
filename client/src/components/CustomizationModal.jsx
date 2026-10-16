@@ -34,7 +34,7 @@ export default function CustomizationModal({ item, isOpen, onClose }) {
   const [isSuccessToast, setIsSuccessToast] = useState(false);
 
   // Check if item is a drink or food
-  const isDrink = item?.has_customization ?? true;
+  const isDrink = !['pastries', 'sandwiches', 'desserts'].includes(item?.category_id);
 
   // Food specific add-on options based on item type
   const foodAddonChoices = useMemo(() => {

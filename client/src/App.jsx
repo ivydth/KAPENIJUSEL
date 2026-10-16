@@ -152,12 +152,12 @@ function MainApp() {
   // Popular picks for Home tab
   const popularPicks = menuItems.filter((m) =>
     [
-      'batangas-barako-pour-over',
+      'kapeng-barako-pour-over',
       'kape-kastila-spanish-latte',
-      'classic-brioche-ensaymada',
-      'corned-beef-pandesal-sliders',
-      'halaya-ube-latte',
-      'mango-graham-float-cup'
+      'classic-butter-ensaymada',
+      'corned-beef-cheese-pandesal',
+      'ube-halaya-latte',
+      'mango-graham-shaken-milk'
     ].includes(m.id)
   );
 

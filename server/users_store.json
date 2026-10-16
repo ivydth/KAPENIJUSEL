@@ -20,5 +20,16 @@
       "password": "mypassword123",
       "branch_name": "Kape Muna — Main Branch"
     }
+  ],
+  [
+    "yesha@gmail.com",
+    {
+      "id": "usr-1792138010648",
+      "full_name": "yesha",
+      "email": "yesha@gmail.com",
+      "phone": "09876554321",
+      "password": "shawatson",
+      "branch_name": "Kape Muna — Main Branch"
+    }
   ]
 ]
