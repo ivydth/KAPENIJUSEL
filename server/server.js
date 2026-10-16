@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+const path = require('path');
+app.use('/images', express.static(path.join(__dirname, '../client/public/images')));
 
 // Initialize Supabase Client if credentials exist
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -61,7 +63,6 @@ const customizationOptionsData = [
 const menuItemsData = require('./menu_data.json');
 
 const fs = require('fs');
-const path = require('path');
 const ORDERS_FILE = path.join(__dirname, 'orders_store.json');
 
 // Active Orders in-memory cache with disk persistence
