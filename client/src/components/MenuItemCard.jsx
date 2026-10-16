@@ -1,16 +1,20 @@
 import React from 'react';
 import { Plus, Star } from 'lucide-react';
+import { FALLBACK_IMAGE } from '../data/menuData';
 
 export default function MenuItemCard({ item, onSelect }) {
   const {
     name,
     description,
     base_price,
+    price,
     image_url,
     badge,
     rating = 4.8,
     review_count = '1.2k+',
   } = item;
+
+  const displayPrice = Number(base_price ?? price ?? 0).toFixed(2);
 
   return (
     <div
@@ -21,8 +25,14 @@ export default function MenuItemCard({ item, onSelect }) {
         {/* Product Photo Container */}
         <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#F3EDE2] mb-3">
           <img
-            src={image_url}
+            src={image_url || FALLBACK_IMAGE}
             alt={name}
+            onError={(e) => {
+              if (e.target.src !== FALLBACK_IMAGE) {
+                e.target.onerror = null;
+                e.target.src = FALLBACK_IMAGE;
+              }
+            }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
@@ -60,7 +70,7 @@ export default function MenuItemCard({ item, onSelect }) {
         <div>
           <span className="text-xs text-[#221610]/50 font-medium">From</span>
           <p className="font-bold text-sm sm:text-base text-[#221610] tracking-tight">
-            ₱{Number(base_price).toFixed(2)}
+            ₱{displayPrice}
           </p>
         </div>
 

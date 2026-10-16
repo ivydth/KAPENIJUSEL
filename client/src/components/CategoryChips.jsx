@@ -13,12 +13,13 @@ import {
 // Icon mapping dictionary
 const ICON_MAP = {
   all: Sparkles,
+  coffee: Coffee,
   espresso: Coffee,
   'cold-brew': CupSoda,
+  'non-coffee': Milk,
   pastries: Croissant,
   sandwiches: Layers,
   desserts: Cake,
-  'non-coffee': Milk,
   breakfast: UtensilsCrossed,
 };
 

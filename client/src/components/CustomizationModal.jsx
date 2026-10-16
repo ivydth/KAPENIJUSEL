@@ -12,6 +12,7 @@ import {
   Heart
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { FALLBACK_IMAGE } from '../data/menuData';
 
 export default function CustomizationModal({ item, isOpen, onClose }) {
   const { addToCart, setIsCartOpen } = useCart();
@@ -192,8 +193,14 @@ export default function CustomizationModal({ item, isOpen, onClose }) {
         {/* Compact, Appetizing Photo Banner */}
         <div className="relative h-36 sm:h-44 w-full bg-[#2A1810] flex-shrink-0">
           <img
-            src={item.image_url}
+            src={item.image_url || FALLBACK_IMAGE}
             alt={item.name}
+            onError={(e) => {
+              if (e.target.src !== FALLBACK_IMAGE) {
+                e.target.onerror = null;
+                e.target.src = FALLBACK_IMAGE;
+              }
+            }}
             className="w-full h-full object-cover opacity-90"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#221610] via-black/30 to-black/50" />

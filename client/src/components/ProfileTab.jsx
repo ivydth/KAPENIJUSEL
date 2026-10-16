@@ -82,7 +82,7 @@ export default function ProfileTab({ currentUser, onTrackOrder, onSignOut }) {
               340 <span className="text-sm font-sans font-normal text-white/70">beans</span>
             </p>
             <p className="text-[11px] text-white/70 mt-1">
-              60 beans away from a free Artisanal Cappuccino!
+              60 beans away from a free Batangas Barako Pour-Over!
             </p>
           </div>
 
@@ -158,10 +158,10 @@ export default function ProfileTab({ currentUser, onTrackOrder, onSignOut }) {
           <div className="py-2.5 flex justify-between items-center">
             <div>
               <p className="font-bold text-roast">Order #KM-108</p>
-              <p className="text-[11px] text-roast/60">Cappuccino (16oz) + Cappuccino (12oz)</p>
+              <p className="text-[11px] text-roast/60">Batangas Barako Pour-Over (16oz) + Classic Brioche Ensaymada</p>
             </div>
             <div className="text-right">
-              <span className="font-bold text-roast">₱310.00</span>
+              <span className="font-bold text-roast">₱210.00</span>
               <p className="text-[10px] text-emerald-600 font-semibold">Active</p>
             </div>
           </div>

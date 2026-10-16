@@ -12,6 +12,7 @@ import BottomNav from './components/BottomNav';
 import NotificationsModal from './components/NotificationsModal';
 import MenuTab from './components/MenuTab';
 import ProfileTab from './components/ProfileTab';
+import { CATEGORIES, MENU_ITEMS } from './data/menuData';
 import { CartProvider, useCart } from './context/CartContext';
 import {
   ArrowRight,
@@ -44,8 +45,8 @@ function MainApp() {
 
   // Portal tab states: 'home' | 'menu' | 'tracking' | 'profile'
   const [activeTab, setActiveTab] = useState('home');
-  const [categories, setCategories] = useState([]);
-  const [menuItems, setMenuItems] = useState([]);
+  const [categories, setCategories] = useState(CATEGORIES);
+  const [menuItems, setMenuItems] = useState(MENU_ITEMS);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [customizingItem, setCustomizingItem] = useState(null);
@@ -64,12 +65,14 @@ function MainApp() {
       try {
         const res = await fetch(`${API_BASE}/menu`);
         const data = await res.json();
-        if (data.success) {
-          setCategories(data.categories || []);
-          setMenuItems(data.menu_items || []);
+        if (data.success && data.menu_items?.length) {
+          setCategories(data.categories || CATEGORIES);
+          setMenuItems(data.menu_items || MENU_ITEMS);
         }
       } catch (err) {
         console.warn('API fetch menu warning, utilizing local fallback dataset:', err);
+        setCategories(CATEGORIES);
+        setMenuItems(MENU_ITEMS);
       }
     }
     loadMenu();
@@ -122,7 +125,14 @@ function MainApp() {
 
   // Popular picks for Home tab
   const popularPicks = menuItems.filter((m) =>
-    ['cappuccino', 'chocolate-muffin', 'chicken-club-sandwich', 'spanish-latte'].includes(m.id)
+    [
+      'batangas-barako-pour-over',
+      'kape-kastila-spanish-latte',
+      'classic-brioche-ensaymada',
+      'corned-beef-pandesal-sliders',
+      'halaya-ube-latte',
+      'mango-graham-float-cup'
+    ].includes(m.id)
   );
 
   // 1. RENDER LANDING PAGE

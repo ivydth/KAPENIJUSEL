@@ -14,6 +14,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { FALLBACK_IMAGE } from '../data/menuData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -198,8 +199,14 @@ export default function CartDrawer({ onOrderCreated }) {
                   className="p-3.5 rounded-2xl bg-[#FDFBF7] border border-[#ECE2D3] shadow-cafe-sm flex gap-3 items-center"
                 >
                   <img
-                    src={item.image_url}
+                    src={item.image_url || FALLBACK_IMAGE}
                     alt={item.item_name}
+                    onError={(e) => {
+                      if (e.target.src !== FALLBACK_IMAGE) {
+                        e.target.onerror = null;
+                        e.target.src = FALLBACK_IMAGE;
+                      }
+                    }}
                     className="w-16 h-16 rounded-xl object-cover bg-cream-chip flex-shrink-0"
                   />
 

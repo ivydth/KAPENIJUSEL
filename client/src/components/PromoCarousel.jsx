@@ -11,7 +11,7 @@ const PROMO_SLIDES = [
     buttonText: 'ORDER NOW',
     image: '/images/hero_coffee.png',
     bgGradient: 'from-[#23150D] via-[#2A1910] to-[#180E09]',
-    categoryTarget: 'espresso'
+    categoryTarget: 'coffee'
   },
   {
     id: 2,

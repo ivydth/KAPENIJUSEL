@@ -4,7 +4,7 @@ import { X, Bell, Coffee, Sparkles, Check, Clock } from 'lucide-react';
 const NOTIFICATIONS = [
   {
     id: 1,
-    title: 'Your Cappuccino is Queued!',
+    title: 'Your Batangas Barako is Queued!',
     desc: 'Order #KM-108 has been sent to our barista station at Main Branch.',
     time: '5 mins ago',
     unread: true,
